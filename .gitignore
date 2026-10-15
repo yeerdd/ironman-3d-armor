@@ -1,0 +1,6 @@
+test_*.png
+verify_*.png
+check_*.png
+live_*.png
+__pycache__/
+*.pyc

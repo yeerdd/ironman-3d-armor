@@ -1,0 +1,11 @@
+Model Information:
+* title:	Marvel™ Iron Man Mark 6 Blender Model
+* source:	https://sketchfab.com/3d-models/marveltm-iron-man-mark-6-blender-model-9865dc82c37542ef8d5bd8769e58cb59
+* author:	Mittergen (https://sketchfab.com/3774428638)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Marvel™ Iron Man Mark 6 Blender Model" (https://sketchfab.com/3d-models/marveltm-iron-man-mark-6-blender-model-9865dc82c37542ef8d5bd8769e58cb59) by Mittergen (https://sketchfab.com/3774428638) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
