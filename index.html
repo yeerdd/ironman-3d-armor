@@ -1,2160 +1,694 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MARK 85 // 电影级机械解构与装配工程</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --cyan: #00f0ff;
-      --cyan-dim: rgba(0, 240, 255, 0.2);
-      --gold: #ffb700;
-      --crimson: #e62429;
-      --dark-bg: #020409;
-      --hud-panel: rgba(5, 12, 22, 0.82);
-    }
+<!DOCTYPE html><html lang="zh-CN" class="notranslate" translate="no"><head><style>html,body,:root{background:#080c14 !important;background-color:#080c14 !important;--next-error-bg:#080c14 !important;color-scheme:dark !important;}* { -webkit-font-smoothing: antialiased; }
+/* GESTURE PANEL & GUIDE EMBEDDED FIX */
+.gesture-control {
+  width: min(23rem, calc(100vw - 1.5rem)) !important;
+}
+.gesture-control__header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 0.45rem !important;
+}
+.gesture-control__title-group {
+  flex-shrink: 0 !important;
+  min-width: 0 !important;
+}
+.gesture-control__eyebrow {
+  font-size: 0.66rem !important;
+  letter-spacing: 0.1em !important;
+  white-space: nowrap !important;
+}
+.gesture-control__sub-eyebrow {
+  font-size: 0.52rem !important;
+  letter-spacing: 0.08em !important;
+}
+.gesture-control__actions {
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.35rem !important;
+}
+.gesture-control__guide-btn,
+.gesture-control__toggle,
+.gesture-control__collapse-btn {
+  padding: 0.22rem 0.45rem !important;
+  font-size: 0.6rem !important;
+  letter-spacing: 0.04em !important;
+}
+.gesture-guide-card {
+  transform: none !important;
+  width: 100% !important;
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.5rem !important;
+}
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      user-select: none;
-    }
-
-    body, html {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: radial-gradient(circle at 50% 45%, #091322 0%, #03060c 60%, #010204 100%);
-      color: #fff;
-      font-family: 'Rajdhani', -apple-system, sans-serif;
-    }
-
-    #webgl-canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 1;
-    }
-
-    /* Cinematic Film Vignette & Lens Flare tint */
-    .cinematic-vignette {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 2;
-      background: radial-gradient(circle at center, transparent 40%, rgba(1, 2, 4, 0.88) 100%);
-    }
-
-    /* Minimalist Floating Top Header */
-    .top-header {
-      position: absolute;
-      top: 24px;
-      left: 32px;
-      z-index: 10;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      pointer-events: none;
-      opacity: 0.95;
-    }
-
-    .top-title {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 15px;
-      font-weight: 800;
-      letter-spacing: 3px;
-      color: #edf5ff;
-      text-shadow: 0 0 12px rgba(0, 240, 255, 0.55);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .nanotech-core-badge {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--cyan);
-      box-shadow: 0 0 10px var(--cyan), 0 0 20px var(--cyan);
-      animation: core-pulse 2s infinite ease-in-out;
-    }
-
-    @keyframes core-pulse {
-      0%, 100% { transform: scale(1); opacity: 0.7; }
-      50% { transform: scale(1.3); opacity: 1; filter: drop-shadow(0 0 6px #fff); }
-    }
-
-    .top-sub {
-      font-size: 11px;
-      font-family: 'Orbitron', sans-serif;
-      letter-spacing: 2px;
-      color: #6e92b8;
-    }
-
-    /* Centered Active Stage Pill */
-    .stage-pill {
-      position: absolute;
-      top: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 10;
-      font-family: 'Orbitron', sans-serif;
-      font-size: 11px;
-      letter-spacing: 2px;
-      color: var(--cyan);
-      background: var(--hud-panel);
-      padding: 7px 20px;
-      border-radius: 20px;
-      border: 1px solid rgba(0, 240, 255, 0.25);
-      backdrop-filter: blur(16px);
-      box-shadow: 0 4px 25px rgba(0, 0, 0, 0.6);
-      pointer-events: none;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.3s ease;
-    }
-
-    .stage-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--cyan);
-      box-shadow: 0 0 8px var(--cyan);
-    }
-
-    /* Kinematic Sequence Tracker Bar (Top Right) */
-    .sequence-tracker {
-      position: absolute;
-      top: 24px;
-      right: 32px;
-      z-index: 10;
-      display: flex;
-      gap: 12px;
-      background: var(--hud-panel);
-      padding: 6px 14px;
-      border-radius: 16px;
-      border: 1px solid rgba(0, 240, 255, 0.18);
-      backdrop-filter: blur(12px);
-      font-family: 'Orbitron', sans-serif;
-      font-size: 10px;
-      letter-spacing: 1px;
-      color: #6283a3;
-      pointer-events: none;
-    }
-
-    .seq-step {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      transition: color 0.25s, text-shadow 0.25s;
-    }
-
-    .seq-step.active {
-      color: var(--cyan);
-      text-shadow: 0 0 8px var(--cyan);
-      font-weight: 700;
-    }
-
-    /* ULTRA-SLEEK FLOATING CONTROL DOCK */
-    .minimal-dock {
-      position: absolute;
-      bottom: 28px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      background: var(--hud-panel);
-      border: 1px solid rgba(0, 240, 255, 0.32);
-      border-top: 2px solid var(--cyan);
-      border-radius: 35px;
-      backdrop-filter: blur(24px);
-      padding: 10px 24px;
-      box-shadow: 0 15px 45px rgba(0, 0, 0, 0.75), 0 0 30px rgba(0, 240, 255, 0.12);
-      transition: opacity 0.4s ease, transform 0.4s ease;
-    }
-
-    .minimal-dock.dimmed {
-      opacity: 0.18;
-    }
-
-    .minimal-dock:hover {
-      opacity: 1 !important;
-    }
-
-    /* Main Action Button */
-    .dock-main-btn {
-      background: linear-gradient(135deg, rgba(0, 240, 255, 0.35), rgba(255, 183, 0, 0.25));
-      border: 1px solid var(--cyan);
-      color: #fff;
-      padding: 9px 20px;
-      border-radius: 25px;
-      font-family: 'Orbitron', sans-serif;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.25s ease;
-      box-shadow: 0 0 15px rgba(0, 240, 255, 0.25);
-    }
-
-    .dock-main-btn:hover {
-      background: linear-gradient(135deg, rgba(0, 240, 255, 0.6), rgba(255, 183, 0, 0.4));
-      box-shadow: 0 0 25px var(--cyan);
-      transform: scale(1.04);
-      color: #fff;
-    }
-
-    .dock-main-btn.active {
-      background: var(--gold);
-      color: #02060d;
-      border-color: #fff;
-      box-shadow: 0 0 25px var(--gold);
-    }
-
-    /* Timeline Slider */
-    .slider-box {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .dock-slider {
-      -webkit-appearance: none;
-      width: 240px;
-      height: 5px;
-      background: linear-gradient(90deg, 
-        rgba(0, 240, 255, 0.35) 0%, 
-        rgba(255, 183, 0, 0.45) 50%, 
-        rgba(0, 255, 170, 0.55) 100%);
-      border-radius: 3px;
-      outline: none;
-      cursor: pointer;
-    }
-
-    .dock-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 15px;
-      height: 15px;
-      border-radius: 50%;
-      background: #ffffff;
-      border: 2px solid var(--cyan);
-      box-shadow: 0 0 12px var(--cyan);
-      cursor: pointer;
-      transition: transform 0.15s;
-    }
-
-    .dock-slider::-webkit-slider-thumb:hover {
-      transform: scale(1.35);
-    }
-
-    .dock-status-num {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 13px;
-      color: var(--gold);
-      min-width: 45px;
-      font-weight: 700;
-    }
-
-    /* Option Toggles */
-    .dock-toggles {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 11px;
-      font-family: 'Orbitron', sans-serif;
-      color: #8bb7db;
-    }
-
-    .dock-toggle-btn {
-      background: rgba(0, 240, 255, 0.08);
-      border: 1px solid rgba(0, 240, 255, 0.25);
-      color: #8bb7db;
-      padding: 5px 12px;
-      border-radius: 15px;
-      font-size: 10px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .dock-toggle-btn:hover {
-      background: rgba(0, 240, 255, 0.22);
-      color: #fff;
-    }
-
-    .dock-toggle-btn.active {
-      background: var(--cyan);
-      color: #030811;
-      font-weight: 700;
-      border-color: #fff;
-      box-shadow: 0 0 12px var(--cyan);
-    }
-
-    /* Bottom Hints */
-    .bottom-hint {
-      position: absolute;
-      bottom: 8px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 5;
-      font-size: 10px;
-      font-family: 'Orbitron', sans-serif;
-      color: rgba(255, 255, 255, 0.35);
-      letter-spacing: 1px;
-      pointer-events: none;
-    }
-
-    /* Loader */
-    #loader {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: #02050a;
-      z-index: 100;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      transition: opacity 0.6s ease;
-    }
-
-    .loader-ring {
-      width: 65px;
-      height: 65px;
-      border: 2px solid rgba(0, 240, 255, 0.15);
-      border-top-color: var(--cyan);
-      border-right-color: var(--gold);
-      border-radius: 50%;
-      animation: spin 1s infinite linear;
-      box-shadow: 0 0 25px rgba(0, 240, 255, 0.25);
-    }
-
-    @keyframes spin {
-      100% { transform: rotate(360deg); }
-    }
-
-    .loader-text {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 13px;
-      letter-spacing: 3px;
-      color: var(--cyan);
-    }
-
-    /* Stark Industries Holographic Diagnostic HUD Overlays */
-    .stark-hud-left {
-      position: absolute;
-      left: 32px;
-      top: 100px;
-      z-index: 10;
-      pointer-events: none;
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 11px;
-      color: rgba(0, 240, 255, 0.75);
-      background: rgba(4, 12, 24, 0.65);
-      border-left: 2px solid var(--cyan);
-      border-top: 1px solid rgba(0, 240, 255, 0.2);
-      border-bottom: 1px solid rgba(0, 240, 255, 0.2);
-      padding: 12px 18px;
-      backdrop-filter: blur(12px);
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      letter-spacing: 1px;
-      box-shadow: 0 0 25px rgba(0, 240, 255, 0.08);
-    }
-
-    .stark-hud-title {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 4px;
-    }
-
-    .hud-stat-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 20px;
-    }
-
-    .hud-stat-val {
-      color: var(--gold);
-      font-weight: bold;
-    }
-
-    .hud-stat-val.active {
-      color: #00ffaa;
-      text-shadow: 0 0 6px #00ffaa;
-    }
-
-    /* Right Side Kinematic Actuator Monitor */
-    .stark-hud-right {
-      position: absolute;
-      right: 32px;
-      top: 80px;
-      z-index: 10;
-      pointer-events: none;
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 11px;
-      color: rgba(0, 240, 255, 0.75);
-      background: rgba(4, 12, 24, 0.65);
-      border-right: 2px solid var(--cyan);
-      border-top: 1px solid rgba(0, 240, 255, 0.2);
-      border-bottom: 1px solid rgba(0, 240, 255, 0.2);
-      padding: 12px 18px;
-      backdrop-filter: blur(12px);
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      letter-spacing: 1px;
-      box-shadow: 0 0 25px rgba(0, 240, 255, 0.08);
-      min-width: 220px;
-    }
-
-    /* Cinematic Hologram Scanline Sweeper */
-    .hologram-scanline {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 3;
-      background: linear-gradient(to bottom, 
-        transparent 50%, 
-        rgba(0, 240, 255, 0.02) 51%, 
-        transparent 53%);
-      background-size: 100% 8px;
-      opacity: 0.6;
-    }
-
-    .hologram-sweep-bar {
-      position: absolute;
-      left: 0;
-      width: 100%;
-      height: 3px;
-      background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.5), rgba(0, 255, 170, 0.8), rgba(0, 240, 255, 0.5), transparent);
-      box-shadow: 0 0 15px var(--cyan);
-      pointer-events: none;
-      z-index: 3;
-      animation: scan-sweep 6s linear infinite;
-    }
-
-    @keyframes scan-sweep {
-      0% { top: -5%; opacity: 0; }
-      10% { opacity: 0.7; }
-      90% { opacity: 0.7; }
-      100% { top: 105%; opacity: 0; }
-    }
-
-
-    /* Mode Switcher Pill in Top Center */
-    .mode-switcher {
-      position: absolute;
-      top: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 20;
-      display: flex;
-      align-items: center;
-      background: rgba(5, 14, 28, 0.85);
-      border: 1px solid rgba(0, 240, 255, 0.4);
-      border-radius: 30px;
-      padding: 4px;
-      box-shadow: 0 4px 25px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 240, 255, 0.2);
-      backdrop-filter: blur(16px);
-      gap: 4px;
-    }
-
-    .mode-tab-btn {
-      background: transparent;
-      border: none;
-      color: #7b9cb8;
-      font-family: 'Orbitron', sans-serif;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      padding: 8px 20px;
-      border-radius: 24px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .mode-tab-btn:hover {
-      color: #fff;
-    }
-
-    .mode-tab-btn.active {
-      background: linear-gradient(135deg, rgba(0, 240, 255, 0.35), rgba(255, 183, 0, 0.25));
-      color: #fff;
-      border: 1px solid var(--cyan);
-      box-shadow: 0 0 15px rgba(0, 240, 255, 0.35);
-    }
-
-    /* Action Toolbar (Bottom Center in Action Mode) */
-    .action-dock {
-      position: absolute;
-      bottom: 28px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background: var(--hud-panel);
-      border: 1px solid rgba(0, 240, 255, 0.32);
-      border-top: 2px solid var(--cyan);
-      border-radius: 35px;
-      backdrop-filter: blur(24px);
-      padding: 10px 24px;
-      box-shadow: 0 15px 45px rgba(0, 0, 0, 0.75), 0 0 30px rgba(0, 240, 255, 0.15);
-      transition: opacity 0.4s ease, transform 0.4s ease;
-    }
-
-    .action-btn {
-      background: rgba(0, 240, 255, 0.08);
-      border: 1px solid rgba(0, 240, 255, 0.3);
-      color: #a8d5ff;
-      padding: 9px 18px;
-      border-radius: 20px;
-      font-family: 'Orbitron', sans-serif;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.25s ease;
-    }
-
-    .action-btn:hover {
-      background: rgba(0, 240, 255, 0.25);
-      color: #fff;
-      border-color: #fff;
-      box-shadow: 0 0 15px var(--cyan);
-      transform: scale(1.04);
-    }
-
-    .action-btn.active {
-      background: linear-gradient(135deg, rgba(0, 240, 255, 0.5), rgba(255, 183, 0, 0.4));
-      color: #fff;
-      border-color: var(--cyan);
-      box-shadow: 0 0 20px var(--cyan);
-    }
-
-  </style>
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+</style><script>window.addEventListener("offline", function(e){ e.stopImmediatePropagation(); }, true);window.addEventListener("error", function(e){  if (e && e.message && /fetch|network|loading chunk|failed to fetch|dynamically imported/i.test(e.message)) {    e.preventDefault(); e.stopImmediatePropagation();  }}, true);window.addEventListener("unhandledrejection", function(e){  var msg = (e && e.reason && (e.reason.message || e.reason.toString())) || "";  if (/fetch|network|loading chunk|aborted|failed to fetch/i.test(msg)) {    e.preventDefault(); e.stopImmediatePropagation();  }}, true);</script><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><meta name="google" content="notranslate"/><script>
+(function(){
+  // 国内网络切片自适应重试与全局白屏免疫护盾 (Network Resilience Shield)
+  window.addEventListener('error', function(e) {
+    var target = e.target;
+    if (target && target.tagName === 'SCRIPT') {
+      var src = target.src || '';
+      if (src.indexOf('/_next/static/chunks/') !== -1 && !target.dataset.retried) {
+        target.dataset.retried = '1';
+        console.warn('[Network Shield] 正在自动重试加载网络切片:', src);
+        var retryScript = document.createElement('script');
+        retryScript.src = src + (src.indexOf('?') === -1 ? '?t=' : '&t=') + Date.now();
+        retryScript.async = true;
+        if (target.crossOrigin) retryScript.crossOrigin = target.crossOrigin;
+        document.head.appendChild(retryScript);
       }
+      e.preventDefault();
+      e.stopPropagation();
+      return true;
     }
-  </script>
-</head>
-<body>
-
-  <div id="loader">
-    <div class="loader-ring"></div>
-    <div class="loader-text">MARK 85 // 机械解构与运动学引擎初始化...</div>
-  </div>
-
-  <canvas id="webgl-canvas"></canvas>
-
-  <!-- Holographic Scanline & Laser Sweeper -->
-  <div class="hologram-scanline"></div>
-  <div class="hologram-sweep-bar"></div>
-
-  <!-- Stark Industries Tactical Telemetry (Left) -->
-  <div class="stark-hud-left">
-    <div class="stark-hud-title">
-      <span style="color:var(--cyan);">◈</span> STARK IND. KINEMATICS // MK85
-    </div>
-    <div class="hud-stat-row"><span>SYSTEM STATUS:</span><span class="hud-stat-val active" id="hud-sys-status">ONLINE</span></div>
-    <div class="hud-stat-row"><span>PRESSURE CORE:</span><span class="hud-stat-val" id="hud-pressure">14.7 PSI</span></div>
-    <div class="hud-stat-row"><span>SERVO TORQUE:</span><span class="hud-stat-val" id="hud-torque">4,200 Nm</span></div>
-    <div class="hud-stat-row"><span>TITANIUM LOCK:</span><span class="hud-stat-val active" id="hud-locks">ENGAGED</span></div>
-    <div class="hud-stat-row"><span>ARC OUTPUT:</span><span class="hud-stat-val" id="hud-reactor">8.5 GJ/s</span></div>
-  </div>
-
-  <!-- Realtime Actuator Position Monitor (Right) -->
-  <div class="stark-hud-right">
-    <div class="stark-hud-title">
-      <span style="color:var(--gold);">⚡</span> ACTUATOR TELEMETRY
-    </div>
-    <div class="hud-stat-row"><span>DISPLACEMENT:</span><span class="hud-stat-val" id="hud-displacement">0.00 mm</span></div>
-    <div class="hud-stat-row"><span>HINGE ELEVATION:</span><span class="hud-stat-val" id="hud-elevation">0.0°</span></div>
-    <div class="hud-stat-row"><span>HYDRAULIC EXT:</span><span class="hud-stat-val" id="hud-strut-ext">0.00 cm</span></div>
-    <div class="hud-stat-row"><span>TETHER VOLTAGE:</span><span class="hud-stat-val" id="hud-tether-volt">0 kV</span></div>
-  </div>
-
-  <div class="cinematic-vignette"></div>
-
-  <!-- Minimal Top Title -->
-  <div class="top-header">
-    <div class="top-title">
-      <span class="nanotech-core-badge"></span>
-      MARK LXXXV // KINEMATIC DISASSEMBLY
-    </div>
-    <div class="top-sub">CINEMATIC MECHANICAL EXPANSION & STRUCTURAL INSPECTION</div>
-  </div>
-
-  <!-- DUAL-STATE MODE SWITCHER -->
-  <div class="mode-switcher" id="mode-switcher">
-    <button class="mode-tab-btn active" id="btn-mode-action">
-      <span>🦾</span> 战甲动作模式
-    </button>
-    <button class="mode-tab-btn" id="btn-mode-disassemble">
-      <span>🔩</span> 机械解构模式
-    </button>
-  </div>
-
-  <!-- ACTION MODE DOCK -->
-  <div class="action-dock" id="action-dock">
-    <button class="action-btn active" id="btn-act-idle">
-      <span>⚡</span> 战斗警戒待机
-    </button>
-    <button class="action-btn" id="btn-act-tosuit">
-      <span>🦾</span> 纳米战甲召唤合体
-    </button>
-    <button class="action-btn" id="btn-act-repulsor">
-      <span>💥</span> 掌心炮发射
-    </button>
-    <button class="action-btn" id="btn-act-landing">
-      <span>🛡️</span> 英雄落地姿态
-    </button>
-  </div>
-
-  <!-- Realtime Stage Indicator -->
-  <div class="stage-pill" id="stage-pill">
-    <span class="stage-dot"></span>
-    <span id="stage-text">战甲完全闭合 // 待命状态</span>
-  </div>
-
-  <!-- Kinematic Sequence Tracker -->
-  <div class="sequence-tracker">
-    <span class="seq-step active" id="step-0">① 解锁泄压</span>
-    <span>»</span>
-    <span class="seq-step" id="step-1">② 铰链翻转</span>
-    <span>»</span>
-    <span class="seq-step" id="step-2">③ 导轨滑脱</span>
-    <span>»</span>
-    <span class="seq-step" id="step-3">④ 悬浮定格</span>
-  </div>
-
-  <!-- SLEEK MINIMALIST FLOATING DOCK -->
-  <div class="minimal-dock" id="minimal-dock">
-    <button class="dock-main-btn" id="btn-toggle-play">
-      <span id="play-icon">▶</span>
-      <span id="play-text">启动机械解构</span>
-    </button>
-
-    <div class="slider-box">
-      <input type="range" id="dock-slider" class="dock-slider" min="0" max="1000" value="0" step="1">
-      <span class="dock-status-num" id="dock-status-num">0%</span>
-    </div>
-
-    <div class="dock-toggles">
-      <button class="dock-toggle-btn active" id="btn-strut" title="伸缩机械液压杆">
-        🔩 机械推杆
-      </button>
-      <button class="dock-toggle-btn active" id="btn-tether" title="高能激光约束线">
-        ⚡ 能量导轨
-      </button>
-      <button class="dock-toggle-btn active" id="btn-loop" title="连续循环播放">
-        🔄 循环
-      </button>
-      <button class="dock-toggle-btn" id="btn-speed" title="播放速率">
-        1.0x
-      </button>
-      <button class="dock-toggle-btn" id="btn-reset" title="复位完全闭合">
-        ↺ 复位
-      </button>
-    </div>
-  </div>
-
-  <div class="bottom-hint">空格键 机械拆解 / 复原 ｜ 鼠标左键 360° 旋转 ｜ 滚轮推进拉远</div>
-
-  <script type="module">
-    import * as THREE from 'three';
-    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-    import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-
-    window.THREE = THREE;
-
-        // --- Marvel Studios 'Iron Man 2' Mark V Suitcase Mechanical Audio Engine ---
-    const AudioEngine = window.AudioEngine = {
-      ctx: null,
-      noiseBuffer: null,
-      metalRingBuffer: null,
-      init() {
-        if (!this.ctx) {
-          const AudioContext = window.AudioContext || window.webkitAudioContext;
-          if (AudioContext) {
-            this.ctx = new AudioContext();
-            const bufferSize = this.ctx.sampleRate * 2.0;
-            this.noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-            const data = this.noiseBuffer.getChannelData(0);
-            let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
-            for (let i = 0; i < bufferSize; i++) {
-              const white = Math.random() * 2 - 1;
-              b0 = 0.99886 * b0 + white * 0.0555179;
-              b1 = 0.99332 * b1 + white * 0.0750759;
-              b2 = 0.96900 * b2 + white * 0.1538520;
-              b3 = 0.86650 * b3 + white * 0.3104856;
-              b4 = 0.55000 * b4 + white * 0.5329522;
-              b5 = -0.7616 * b5 - white * 0.0168980;
-              data[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11;
-              b6 = white * 0.115926;
-            }
-          }
-        }
-        if (this.ctx && this.ctx.state === 'suspended') {
-          this.ctx.resume();
-        }
-      },
-      // 1. Rapid Multi-Plate Stepper Ratchet & Track Clicker (钢铁侠2标志性密集微型鳞片齿轮咔哒声)
-      playRatchetCascade(clicks = 8, intervalMs = 28) {
-        this.init();
-        if (!this.ctx) return;
-        for (let i = 0; i < clicks; i++) {
-          setTimeout(() => {
-            if (!this.ctx) return;
-            const now = this.ctx.currentTime;
-            
-            // High frequency micro-tooth snap
-            const osc = this.ctx.createOscillator();
-            const gain = this.ctx.createGain();
-            osc.type = 'triangle';
-            const freq = 1600 + Math.random() * 800 + i * 90;
-            osc.frequency.setValueAtTime(freq, now);
-            osc.frequency.exponentialRampToValueAtTime(320, now + 0.035);
-
-            gain.gain.setValueAtTime(0.09, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
-
-            osc.connect(gain);
-            gain.connect(this.ctx.destination);
-            osc.start(now);
-            osc.stop(now + 0.035);
-
-            // Metallic tick impulse
-            if (this.noiseBuffer) {
-              const noise = this.ctx.createBufferSource();
-              noise.buffer = this.noiseBuffer;
-              const filter = this.ctx.createBiquadFilter();
-              filter.type = 'highpass';
-              filter.frequency.setValueAtTime(2800, now);
-              const nGain = this.ctx.createGain();
-              nGain.gain.setValueAtTime(0.06, now);
-              nGain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
-              noise.connect(filter);
-              filter.connect(nGain);
-              nGain.connect(this.ctx.destination);
-              noise.start(now);
-              noise.stop(now + 0.025);
-            }
-          }, i * intervalMs);
-        }
-      },
-      // 2. High-Pressure Pneumatic Vent & CO2 Expulsion (手提箱初始解锁爆鸣泄压)
-      playPneumaticVent() {
-        this.init();
-        if (!this.ctx || !this.noiseBuffer) return;
-        const now = this.ctx.currentTime;
-        const noise = this.ctx.createBufferSource();
-        noise.buffer = this.noiseBuffer;
-        
-        const filter = this.ctx.createBiquadFilter();
-        filter.type = 'bandpass';
-        filter.frequency.setValueAtTime(3600, now);
-        filter.frequency.exponentialRampToValueAtTime(520, now + 0.42);
-        filter.Q.value = 5.0;
-        
-        const gain = this.ctx.createGain();
-        gain.gain.setValueAtTime(0.32, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.42);
-        
-        noise.connect(filter);
-        filter.connect(gain);
-        gain.connect(this.ctx.destination);
-        noise.start(now);
-        noise.stop(now + 0.42);
-
-        // Heavy bottom hydraulic kick
-        const sub = this.ctx.createOscillator();
-        const subGain = this.ctx.createGain();
-        sub.type = 'triangle';
-        sub.frequency.setValueAtTime(160, now);
-        sub.frequency.exponentialRampToValueAtTime(32, now + 0.22);
-        subGain.gain.setValueAtTime(0.48, now);
-        subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
-        sub.connect(subGain);
-        subGain.connect(this.ctx.destination);
-        sub.start(now);
-        sub.stop(now + 0.22);
-
-        // Accompanied by micro ratchet cascade
-        this.playRatchetCascade(6, 25);
-      },
-      // 3. Mark V Whining High-Torque Servo Motor (高亢工业伺服与拉线电机啸叫)
-      playServoActuator(pitchFactor = 1.0) {
-        this.init();
-        if (!this.ctx) return;
-        const now = this.ctx.currentTime;
-        
-        const osc1 = this.ctx.createOscillator();
-        const osc2 = this.ctx.createOscillator();
-        const servoGain = this.ctx.createGain();
-        
-        osc1.type = 'sawtooth';
-        osc2.type = 'square';
-        
-        const baseFreq = 340 * pitchFactor;
-        osc1.frequency.setValueAtTime(baseFreq, now);
-        osc1.frequency.exponentialRampToValueAtTime(baseFreq * 2.8, now + 0.16);
-        osc1.frequency.exponentialRampToValueAtTime(baseFreq * 0.9, now + 0.42);
-        
-        osc2.frequency.setValueAtTime(baseFreq * 1.5, now);
-        osc2.frequency.exponentialRampToValueAtTime(baseFreq * 3.6, now + 0.18);
-        osc2.frequency.exponentialRampToValueAtTime(baseFreq * 1.2, now + 0.42);
-
-        const filter = this.ctx.createBiquadFilter();
-        filter.type = 'bandpass';
-        filter.frequency.setValueAtTime(1400, now);
-        filter.frequency.exponentialRampToValueAtTime(3200, now + 0.2);
-        filter.frequency.exponentialRampToValueAtTime(800, now + 0.42);
-        filter.Q.value = 3.2;
-
-        servoGain.gain.setValueAtTime(0.12, now);
-        servoGain.gain.linearRampToValueAtTime(0.20, now + 0.14);
-        servoGain.gain.exponentialRampToValueAtTime(0.001, now + 0.42);
-
-        osc1.connect(filter);
-        osc2.connect(filter);
-        filter.connect(servoGain);
-        servoGain.connect(this.ctx.destination);
-
-        osc1.start(now);
-        osc2.start(now);
-        osc1.stop(now + 0.42);
-        osc2.stop(now + 0.42);
-
-        this.playRatchetCascade(4, 35);
-      },
-      // 4. Hydraulic Slide & Metallic Track Glide (液压套筒与机械导轨拉伸音)
-      playHydraulicSlide() {
-        this.init();
-        if (!this.ctx || !this.noiseBuffer) return;
-        const now = this.ctx.currentTime;
-        
-        const noise = this.ctx.createBufferSource();
-        noise.buffer = this.noiseBuffer;
-        
-        const filter = this.ctx.createBiquadFilter();
-        filter.type = 'bandpass';
-        filter.frequency.setValueAtTime(950, now);
-        filter.frequency.linearRampToValueAtTime(1850, now + 0.28);
-        filter.frequency.linearRampToValueAtTime(620, now + 0.55);
-        filter.Q.value = 6.0;
-
-        const gain = this.ctx.createGain();
-        gain.gain.setValueAtTime(0.001, now);
-        gain.gain.linearRampToValueAtTime(0.14, now + 0.2);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
-
-        noise.connect(filter);
-        filter.connect(gain);
-        gain.connect(this.ctx.destination);
-        noise.start(now);
-        noise.stop(now + 0.55);
-
-        this.playRatchetCascade(5, 30);
-      },
-      // 5. Heavy Titanium Clank & Multi-Latch Clamp Slam (手提箱完全展开/复原时的连续重压咬合与金属回鸣)
-      playArmorLockingClang() {
-        this.init();
-        if (!this.ctx) return;
-        const now = this.ctx.currentTime;
-        
-        // 1. Primary Kinetic Slam (重型合金撞击低音炮)
-        const sub = this.ctx.createOscillator();
-        const subGain = this.ctx.createGain();
-        sub.type = 'triangle';
-        sub.frequency.setValueAtTime(220, now);
-        sub.frequency.exponentialRampToValueAtTime(32, now + 0.32);
-        subGain.gain.setValueAtTime(0.55, now);
-        subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
-        sub.connect(subGain);
-        subGain.connect(this.ctx.destination);
-        sub.start(now);
-        sub.stop(now + 0.32);
-
-        // 2. Twin High Mechanical Locking Snaps (前后重叠的双重高硬度卡死咔嗒声)
-        [0, 0.045].forEach((delay, idx) => {
-          const snapTime = now + delay;
-          const snap = this.ctx.createOscillator();
-          const snapGain = this.ctx.createGain();
-          snap.type = 'sine';
-          snap.frequency.setValueAtTime(2100 - idx * 300, snapTime);
-          snap.frequency.exponentialRampToValueAtTime(210, snapTime + 0.08);
-          snapGain.gain.setValueAtTime(0.32, snapTime);
-          snapGain.gain.exponentialRampToValueAtTime(0.001, snapTime + 0.08);
-          snap.connect(snapGain);
-          snapGain.connect(this.ctx.destination);
-          snap.start(snapTime);
-          snap.stop(snapTime + 0.08);
-        });
-
-        // 3. Authentic Hollywood Titanium Ring Resonance (电影原声级别的金属共振泛音)
-        [920, 1480, 2650].forEach((freq, idx) => {
-          const ring = this.ctx.createOscillator();
-          const ringGain = this.ctx.createGain();
-          ring.type = 'sine';
-          ring.frequency.setValueAtTime(freq, now);
-          ring.frequency.exponentialRampToValueAtTime(freq * 0.6, now + 0.45);
-          ringGain.gain.setValueAtTime(0.11 / (idx + 1), now);
-          ringGain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
-          ring.connect(ringGain);
-          ringGain.connect(this.ctx.destination);
-          ring.start(now);
-          ring.stop(now + 0.45);
-        });
-
-        // 4. Quick secondary settling click
-        setTimeout(() => {
-          if (!this.ctx) return;
-          const t = this.ctx.currentTime;
-          const click = this.ctx.createOscillator();
-          const cGain = this.ctx.createGain();
-          click.type = 'sine';
-          click.frequency.setValueAtTime(1400, t);
-          click.frequency.exponentialRampToValueAtTime(180, t + 0.05);
-          cGain.gain.setValueAtTime(0.20, t);
-          cGain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
-          click.connect(cGain);
-          cGain.connect(this.ctx.destination);
-          click.start(t);
-          click.stop(t + 0.05);
-        }, 110);
-      },
-      // 6. Arc Reactor Nanotech Hum / Power Charge (反应堆能量场谐波脉冲)
-      playArcReactorPower() {
-        this.init();
-        if (!this.ctx) return;
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(80, now);
-        osc.frequency.exponentialRampToValueAtTime(540, now + 0.6);
-        gain.gain.setValueAtTime(0.22, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.6);
-      },
-      // 7. Repulsor Weapon High-Pitch Charge & Capacitor Whine (掌心炮/胸口反应堆充能啸叫)
-      playRepulsorCharge() {
-        this.init();
-        if (!this.ctx) return;
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(380, now);
-        osc.frequency.exponentialRampToValueAtTime(2900, now + 0.85);
-        gain.gain.setValueAtTime(0.01, now);
-        gain.gain.linearRampToValueAtTime(0.25, now + 0.75);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.95);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.95);
-      },
-      // 8. Repulsor Blast Plasma Pulse Explosion (掌心炮等离子脉冲爆发音)
-      playRepulsorBlast() {
-        this.init();
-        if (!this.ctx) return;
-        const now = this.ctx.currentTime;
-
-        // Sub-bass thump
-        const sub = this.ctx.createOscillator();
-        const subGain = this.ctx.createGain();
-        sub.type = 'triangle';
-        sub.frequency.setValueAtTime(260, now);
-        sub.frequency.exponentialRampToValueAtTime(28, now + 0.45);
-        subGain.gain.setValueAtTime(0.65, now);
-        subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
-        sub.connect(subGain);
-        subGain.connect(this.ctx.destination);
-        sub.start(now);
-        sub.stop(now + 0.45);
-
-        // High frequency plasma discharge hiss
-        if (this.noiseBuffer) {
-          const noise = this.ctx.createBufferSource();
-          noise.buffer = this.noiseBuffer;
-          const filter = this.ctx.createBiquadFilter();
-          filter.type = 'bandpass';
-          filter.frequency.setValueAtTime(4500, now);
-          filter.frequency.exponentialRampToValueAtTime(300, now + 0.6);
-          filter.Q.value = 3.5;
-          const nGain = this.ctx.createGain();
-          nGain.gain.setValueAtTime(0.35, now);
-          nGain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
-          noise.connect(filter);
-          filter.connect(nGain);
-          nGain.connect(this.ctx.destination);
-          noise.start(now);
-          noise.stop(now + 0.6);
-        }
-      },
-      // 9. Heavy Titanium Footstep / Landing Impact (战甲踏步与铁拳砸地声)
-      playFootstepClank() {
-        this.init();
-        if (!this.ctx) return;
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(140, now);
-        osc.frequency.exponentialRampToValueAtTime(30, now + 0.25);
-        gain.gain.setValueAtTime(0.38, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.25);
-
-        this.playRatchetCascade(3, 15);
-      }
+    var msg = e && (e.message || (e.error && e.error.message) || '');
+    if (typeof msg === 'string' && (
+      msg.indexOf('Loading chunk') !== -1 ||
+      msg.indexOf('CSS_CHUNK_LOAD_FAILED') !== -1 ||
+      msg.indexOf('unexpectedly closed') !== -1 ||
+      msg.indexOf('Bail out to client-side') !== -1 ||
+      msg.indexOf('ResizeObserver') !== -1 ||
+      msg.indexOf('WebGL') !== -1 ||
+      msg.indexOf('E117') !== -1
+    )) {
+      console.warn('[Network Shield] 已阻断瞬时网络抖动异常:', msg);
+      e.preventDefault();
+      e.stopPropagation();
+      return true;
+    }
+  }, true);
+  window.addEventListener('unhandledrejection', function(e) {
+    var reason = e.reason ? (e.reason.message || String(e.reason)) : '';
+    if (typeof reason === 'string' && (
+      reason.indexOf('chunk') !== -1 ||
+      reason.indexOf('closed') !== -1 ||
+      reason.indexOf('fetch') !== -1 ||
+      reason.indexOf('network') !== -1 ||
+      reason.indexOf('Bail out') !== -1 ||
+      reason.indexOf('E117') !== -1
+    )) {
+      console.warn('[Network Shield] 已静默处理非致命网络 Promise 状态:', reason);
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, true);
+  // 锁定未经允许的自动刷新（如 Next.js 异常触发的自杀式 reload）
+  window.addEventListener('beforeunload', function() {});
+  try {
+    var _origReload = window.location.reload.bind(window.location);
+    window.location.reload = function() {
+      console.warn('[Shield] 自动阻断非预期的页面 reload 刷新调用');
     };
+  } catch(e) {}
 
-    // --- Scene Setup ---
-    const canvas = document.getElementById('webgl-canvas');
-    const renderer = new THREE.WebGLRenderer({
-      canvas,
-      antialias: true,
-      alpha: true,
-      powerPreference: 'high-performance'
-    });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.35;
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  // WebGL 丢失静默恢复与事件阻止
+  window.addEventListener('webglcontextlost', function(e) {
+    console.warn('[Shield] 检测到 WebGL 上下文抖动，已自动拦截崩溃并请求恢复');
+    e.preventDefault();
+  }, false);
 
-    const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x020409, 0.04);
-
-    const camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.1, 80);
-    camera.position.set(0, 1.1, 3.2);
-
-    const controls = new OrbitControls(camera, canvas);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.04;
-    controls.maxPolarAngle = Math.PI / 2 + 0.08;
-    controls.minDistance = 0.7;
-    controls.maxDistance = 7.5;
-    controls.target.set(0, 0.95, 0);
-
-    // --- Studio Cinematic Lighting ---
-    const frontLight = new THREE.DirectionalLight(0xffffff, 3.2);
-    frontLight.position.set(0, 3, 5);
-    scene.add(frontLight);
-
-    const topLight = new THREE.DirectionalLight(0xffffff, 2.5);
-    topLight.position.set(2, 6, 4);
-    scene.add(topLight);
-
-    const cyanRim = new THREE.DirectionalLight(0x00e1ff, 5.5);
-    cyanRim.position.set(-5, 3, -3);
-    scene.add(cyanRim);
-
-    const amberRim = new THREE.DirectionalLight(0xff9900, 3.8);
-    amberRim.position.set(5, 1.5, -3);
-    scene.add(amberRim);
-
-    const bottomFill = new THREE.DirectionalLight(0x00d2ff, 2.8);
-    bottomFill.position.set(0, -2, 4);
-    scene.add(bottomFill);
-
-    const ambient = new THREE.AmbientLight(0xffffff, 2.4);
-    scene.add(ambient);
-
-    // Arc reactor PointLight
-    const reactorLight = new THREE.PointLight(0x00f0ff, 5.0, 4.0);
-    reactorLight.position.set(0, 1.25, 0.35);
-    scene.add(reactorLight);
-
-    // Dark ground disc
-    const groundGeo = new THREE.CircleGeometry(3.6, 64);
-    const groundMat = new THREE.MeshBasicMaterial({
-      color: 0x010307,
-      transparent: true,
-      opacity: 0.9,
-      side: THREE.DoubleSide
-    });
-    const groundMesh = new THREE.Mesh(groundGeo, groundMat);
-    groundMesh.rotation.x = -Math.PI / 2;
-    groundMesh.position.y = -0.01;
-    scene.add(groundMesh);
-
-    // --- Holographic Circular Calibration Grid ---
-    const holoRingGeo = new THREE.RingGeometry(1.2, 1.23, 64);
-    const holoRingMat = new THREE.MeshBasicMaterial({
-      color: 0x00f0ff,
-      side: THREE.DoubleSide,
-      transparent: true,
-      opacity: 0.35,
-      blending: THREE.AdditiveBlending
-    });
-    const holoRing1 = new THREE.Mesh(holoRingGeo, holoRingMat);
-    holoRing1.rotation.x = -Math.PI / 2;
-    holoRing1.position.y = 0.01;
-    scene.add(holoRing1);
-
-    const holoOuterGeo = new THREE.RingGeometry(2.4, 2.42, 64);
-    const holoOuterMat = new THREE.MeshBasicMaterial({
-      color: 0x00e1ff,
-      side: THREE.DoubleSide,
-      transparent: true,
-      opacity: 0.22,
-      blending: THREE.AdditiveBlending
-    });
-    const holoRing2 = new THREE.Mesh(holoOuterGeo, holoOuterMat);
-    holoRing2.rotation.x = -Math.PI / 2;
-    holoRing2.position.y = 0.01;
-    scene.add(holoRing2);
-
-    const holoGrid = new THREE.PolarGridHelper(2.5, 16, 8, 64, 0x00f0ff, 0x003355);
-    holoGrid.position.y = 0.005;
-    holoGrid.material.transparent = true;
-    holoGrid.material.opacity = 0.28;
-    scene.add(holoGrid);
-
-
-    // Floating cinematic particles
-    const particleCount = 140;
-    const particleGeo = new THREE.BufferGeometry();
-    const posArr = new Float32Array(particleCount * 3);
-    for (let i = 0; i < particleCount * 3; i += 3) {
-      posArr[i] = (Math.random() - 0.5) * 5;
-      posArr[i + 1] = Math.random() * 3.0;
-      posArr[i + 2] = (Math.random() - 0.5) * 5;
-    }
-    particleGeo.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
-    const particleMat = new THREE.PointsMaterial({
-      color: 0x00e1ff,
-      size: 0.02,
-      transparent: true,
-      opacity: 0.45,
-      blending: THREE.AdditiveBlending
-    });
-    const particles = new THREE.Points(particleGeo, particleMat);
-    scene.add(particles);
-
-    // --- Visual Mechanical Linkages: Hydraulic Struts & Energy Tethers ---
-    let strutPistonGroup = new THREE.Group();
-    scene.add(strutPistonGroup);
-    let strutMeshes = [];
-    let showStruts = true;
-
-    // Tether laser lines
-    let tetherLines = null;
-    let tetherPositions = null;
-    let showTethers = true;
-
-    function initMechanicalLinkageVisuals(partCount) {
-      // 1. Clear old struts
-      while (strutPistonGroup.children.length > 0) {
-        strutPistonGroup.remove(strutPistonGroup.children[0]);
-      }
-      strutMeshes = [];
-
-      // Create metallic cylinder geometry along Y axis for mechanical linkages
-      const strutCylinderGeo = new THREE.CylinderGeometry(0.0032, 0.0032, 1, 8);
-      strutCylinderGeo.translate(0, 0.5, 0);
-
-      const strutMat = new THREE.MeshStandardMaterial({
-        color: 0xc8d6e5,
-        metalness: 0.95,
-        roughness: 0.15,
-        emissive: 0x002b3d,
-        emissiveIntensity: 0.4
+  // 注册全局离线/断网免疫 Service Worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('/sw.js').then(function(reg) {
+        console.log('[Stark SW] 离线与抗网络抖动护盾已激活:', reg.scope);
+      }).catch(function(err) {
+        console.warn('[Stark SW] 注册提示:', err.message);
       });
-
-      for (let i = 0; i < partCount; i++) {
-        const mesh = new THREE.Mesh(strutCylinderGeo, strutMat);
-        mesh.visible = false;
-        strutPistonGroup.add(mesh);
-        strutMeshes.push(mesh);
-      }
-
-      // 2. Tether laser lines
-      if (tetherLines) scene.remove(tetherLines);
-      tetherPositions = new Float32Array(partCount * 6);
-      const lineGeo = new THREE.BufferGeometry();
-      lineGeo.setAttribute('position', new THREE.BufferAttribute(tetherPositions, 3));
-      const lineMat = new THREE.LineBasicMaterial({
-        color: 0x00f0ff,
-        transparent: true,
-        opacity: 0.0,
-        blending: THREE.AdditiveBlending
-      });
-      tetherLines = new THREE.LineSegments(lineGeo, lineMat);
-      scene.add(tetherLines);
-    }
-
-    // --- State Variables ---
-    let currentModel = null;
-    let armorParts = [];
-      window.armorParts = armorParts;
-      window.currentModel = currentModel;
-    let deconstructProgress = 0.0;
-    let isPlaying = false;
-    let playDirection = 1; // 1: deconstructing, -1: reassembling
-    let isLooping = true;
-    let playSpeed = 1.0;
-
-    const loaderElem = document.getElementById('loader');
-    const dockSlider = document.getElementById('dock-slider');
-    const dockStatusNum = document.getElementById('dock-status-num');
-    const stagePill = document.getElementById('stage-pill');
-    const stageText = document.getElementById('stage-text');
-    const btnTogglePlay = document.getElementById('btn-toggle-play');
-    const playIcon = document.getElementById('play-icon');
-    const playText = document.getElementById('play-text');
-    const btnStrut = document.getElementById('btn-strut');
-    const btnTether = document.getElementById('btn-tether');
-    const btnLoop = document.getElementById('btn-loop');
-    const btnSpeed = document.getElementById('btn-speed');
-    const btnReset = document.getElementById('btn-reset');
-    const minimalDock = document.getElementById('minimal-dock');
-    const stepElems = [
-      document.getElementById('step-0'),
-      document.getElementById('step-1'),
-      document.getElementById('step-2'),
-      document.getElementById('step-3')
-    ];
-
-    function fitCameraToObject(cam, object, ctrl, offset = 1.32) {
-      const box = new THREE.Box3().setFromObject(object);
-      const center = box.getCenter(new THREE.Vector3());
-      const size = box.getSize(new THREE.Vector3());
-
-      const maxDim = Math.max(size.x, size.y, size.z);
-      const fov = cam.fov * (Math.PI / 180);
-      let cameraDistance = Math.abs(maxDim / 2 / Math.tan(fov / 2)) * offset;
-
-      cam.position.set(center.x, center.y + size.y * 0.05, center.z + cameraDistance);
-      cam.lookAt(center);
-
-      if (ctrl) {
-        ctrl.target.copy(center);
-        ctrl.maxDistance = cameraDistance * 2.5;
-        ctrl.minDistance = cameraDistance * 0.3;
-        ctrl.update();
-      }
-    }
-
-    // --- Setup Mark 85 Kinematic Engine ---
-    
-    // --- Dual-State System: Action Mode vs Disassembly Mode ---
-    let currentAppMode = window.currentAppMode = 'action'; // 'action' | 'disassemble'
-    let animatedModel = null;
-    let animMixer = null;
-    let animClips = [];
-    let currentAnimAction = null;
-    let activeActionName = 'idle';
-
-    const btnModeAction = document.getElementById('btn-mode-action');
-    const btnModeDisassemble = document.getElementById('btn-mode-disassemble');
-    const actionDock = document.getElementById('action-dock');
-    const stagePillElem = document.getElementById('stage-pill');
-    const sequenceTrackerElem = document.querySelector('.sequence-tracker');
-    const btnActIdle = document.getElementById('btn-act-idle');
-    const btnActToSuit = document.getElementById('btn-act-tosuit');
-    const btnActRepulsor = document.getElementById('btn-act-repulsor');
-    const btnActLanding = document.getElementById('btn-act-landing');
-    const actionButtons = [btnActIdle, btnActToSuit, btnActRepulsor, btnActLanding];
-
-    function setAppMode(mode) {
-      currentAppMode = mode;
-      AudioEngine.init();
-
-      if (mode === 'action') {
-        btnModeAction.classList.add('active');
-        btnModeDisassemble.classList.remove('active');
-        actionDock.style.display = 'flex';
-        minimalDock.style.display = 'none';
-        stagePillElem.style.display = 'none';
-        sequenceTrackerElem.style.display = 'none';
-
-        // Show animated model, hide exploded model
-        if (animatedModel) animatedModel.visible = true;
-        if (currentModel) currentModel.visible = false;
-        if (strutPistonGroup) strutPistonGroup.visible = false;
-        if (tetherLines) tetherLines.visible = false;
-
-        playActionAnimation(activeActionName);
-        AudioEngine.playServoActuator(1.1);
-        AudioEngine.playRatchetCascade(4, 20);
-      } else {
-        btnModeAction.classList.remove('active');
-        btnModeDisassemble.classList.add('active');
-        actionDock.style.display = 'none';
-        minimalDock.style.display = 'flex';
-        stagePillElem.style.display = 'flex';
-        sequenceTrackerElem.style.display = 'flex';
-
-        // Show exploded model, hide animated model
-        if (animatedModel) animatedModel.visible = false;
-        if (currentModel) currentModel.visible = true;
-        if (strutPistonGroup) strutPistonGroup.visible = showStruts;
-        if (tetherLines) tetherLines.visible = showTethers;
-
-        applyDeconstructFactor(deconstructProgress, clock.getElapsedTime());
-        updateUI(deconstructProgress);
-        AudioEngine.playArmorLockingClang();
-      }
-    }
-
-    btnModeAction.addEventListener('click', () => setAppMode('action'));
-    btnModeDisassemble.addEventListener('click', () => setAppMode('disassemble'));
-
-    // Play Action with Smooth Crossfade & Cinematic Sound Effects
-    let actionTimeout = null;
-
-    window.playActionAnimation = playActionAnimation;
-
-    function playActionAnimation(name) {
-      if (!animMixer || !animClips || animClips.length === 0) return;
-      activeActionName = name;
-      actionButtons.forEach(b => b.classList.remove('active'));
-
-      if (actionTimeout) {
-        clearTimeout(actionTimeout);
-        actionTimeout = null;
-      }
-
-      let targetClip = null;
-      let loopMode = THREE.LoopRepeat;
-      let isOneShot = false;
-
-      if (name === 'idle') {
-        btnActIdle.classList.add('active');
-        targetClip = animClips.find(a => a.name === 'HighTower_Tomato_STG01_Male_Idle') || animClips[1];
-      } else if (name === 'tosuit') {
-        btnActToSuit.classList.add('active');
-        // Clip 4 is M_MED_HighTower_Tomato_Casual.ao|Emote_HighTower_Tomato_ToSuit_CMM.001 (Authentic chest touch suit-up!)
-        targetClip = animClips[4] || animClips.find(a => a.name.includes('ToSuit'));
-        loopMode = THREE.LoopOnce;
-        isOneShot = true;
-        AudioEngine.playPneumaticVent();
-        setTimeout(() => AudioEngine.playServoActuator(1.2), 350);
-        setTimeout(() => AudioEngine.playRatchetCascade(8, 25), 900);
-        setTimeout(() => AudioEngine.playArmorLockingClang(), 1750);
-      } else if (name === 'repulsor') {
-        btnActRepulsor.classList.add('active');
-        targetClip = animClips[2] || animClips.find(a => a.name.includes('Idle.001'));
-        loopMode = THREE.LoopOnce;
-        isOneShot = true;
-        // Sound & Light Burst
-        AudioEngine.playRepulsorCharge();
-        setTimeout(() => {
-          AudioEngine.playRepulsorBlast();
-          reactorLight.intensity = 24.0;
-          setTimeout(() => reactorLight.intensity = 5.0, 450);
-        }, 750);
-      } else if (name === 'landing') {
-        btnActLanding.classList.add('active');
-        targetClip = animClips[7] || animClips.find(a => a.name.includes('Idle.002'));
-        loopMode = THREE.LoopOnce;
-        isOneShot = true;
-        AudioEngine.playFootstepClank();
-        setTimeout(() => AudioEngine.playArmorLockingClang(), 400);
-      }
-
-      if (targetClip) {
-        const nextAction = animMixer.clipAction(targetClip);
-        nextAction.stop();
-        nextAction.enabled = true;
-        nextAction.setLoop(loopMode);
-        nextAction.clampWhenFinished = true;
-        nextAction.reset();
-
-        if (currentAnimAction && currentAnimAction !== nextAction) {
-          currentAnimAction.fadeOut(0.35);
-          nextAction.fadeIn(0.35);
-        } else {
-          nextAction.setEffectiveWeight(1);
-        }
-        nextAction.play();
-        currentAnimAction = nextAction;
-
-        // Auto return to idle smoothly upon completion
-        if (isOneShot) {
-          const duration = Math.max(1.8, (targetClip.duration || 4.0) - 0.4);
-          actionTimeout = setTimeout(() => {
-            playActionAnimation('idle');
-          }, duration * 1000);
-        }
-      }
-    }
-
-    btnActIdle.addEventListener('click', () => playActionAnimation('idle'));
-    btnActToSuit.addEventListener('click', () => playActionAnimation('tosuit'));
-    btnActRepulsor.addEventListener('click', () => playActionAnimation('repulsor'));
-    btnActLanding.addEventListener('click', () => playActionAnimation('landing'));
-
-    // Load Animated Model in Background
-    function loadAnimatedSkeletalModel() {
-      loader.load('models/mark85_animated.glb', (gltf) => {
-        animatedModel = gltf.scene;
-        window.animatedModel = animatedModel;
-        animClips = gltf.animations;
-        window.animClips = animClips;
-
-        // Professional offscreen canvas color-regrading function to match mark85_v2.glb PBR metallic finishes
-        function regradeTextureForCinematicMetal(origTex) {
-          if (!origTex || !origTex.image) return origTex;
-          try {
-            const img = origTex.image;
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width || 1024;
-            canvas.height = img.height || 1024;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const d = imgData.data;
-
-            for (let i = 0; i < d.length; i += 4) {
-              const r = d[i], g = d[i+1], b = d[i+2];
-
-              // 1. Titanium Champagne Gold (matches Mat.2 #bfa351 in mark85_v2: [191, 163, 81])
-              // In original texture, gold areas have high R and G with distinct gap from B
-              if (r > 140 && g > 95 && (r - b > 35)) {
-                // Modulate based on original brightness for natural panel contouring
-                const factor = (r + g) / (255 * 2);
-                d[i]   = Math.round(191 * (0.8 + 0.3 * factor));
-                d[i+1] = Math.round(163 * (0.8 + 0.3 * factor));
-                d[i+2] = Math.round(81 * (0.8 + 0.3 * factor));
-              }
-              // 2. Hollywood Deep Crimson Armor (matches Mat.1 #68252a in mark85_v2: [104, 37, 42])
-              // In original texture, red areas have prominent R and significantly lower G, B
-              else if (r > 80 && r > g * 1.35 && r > b * 1.35) {
-                const factor = r / 255;
-                d[i]   = Math.round(104 * (0.75 + 0.35 * factor));
-                d[i+1] = Math.round(37 * (0.75 + 0.35 * factor));
-                d[i+2] = Math.round(42 * (0.75 + 0.35 * factor));
-              }
-              // 3. Dark Titanium Inner Chassis / Mechanical joints (matches #5d5d5d in mark85_v2: [93, 93, 93])
-              else {
-                const lum = (r * 0.299 + g * 0.587 + b * 0.114) / 255;
-                const baseChassis = 75; // gunmetal depth
-                d[i]   = Math.round(baseChassis * (0.6 + 0.5 * lum));
-                d[i+1] = Math.round(baseChassis * (0.6 + 0.5 * lum));
-                d[i+2] = Math.round((baseChassis + 5) * (0.6 + 0.5 * lum));
-              }
-            }
-
-            ctx.putImageData(imgData, 0, 0);
-            const newTex = new THREE.CanvasTexture(canvas);
-            newTex.flipY = origTex.flipY;
-            newTex.colorSpace = THREE.SRGBColorSpace;
-            newTex.wrapS = origTex.wrapS;
-            newTex.wrapT = origTex.wrapT;
-            newTex.needsUpdate = true;
-            return newTex;
-          } catch (e) {
-            console.warn('Texture regrade fallback:', e);
-            return origTex;
-          }
-        }
-
-        // Apply identical PBR metallic properties as mark85_v2 (metalness: 1.0, roughness: 0.24)
-        animatedModel.traverse(c => {
-          if (c.isMesh) {
-            c.frustumCulled = false;
-            c.castShadow = true;
-            c.receiveShadow = true;
-            if (c.material) {
-              const oldMat = c.material;
-              const regradedMap = oldMat.map ? regradeTextureForCinematicMetal(oldMat.map) : null;
-              
-              c.material = new THREE.MeshStandardMaterial({
-                map: regradedMap,
-                metalness: 1.0,           // 100% pure metallic alloy like mark85_v2
-                roughness: 0.24,          // Exact same roughness as Mat.1 and Mat.2
-                envMapIntensity: 2.2,     // Cinematic environmental reflection
-                emissiveMap: oldMat.emissiveMap || null,
-                emissive: oldMat.emissive || new THREE.Color(0x000000),
-                emissiveIntensity: 1.0
-              });
-              c.material.needsUpdate = true;
-            }
-          }
-        });
-
-        // Set canonical centered standing scale & origin position
-        animatedModel.scale.setScalar(0.70);
-        animatedModel.position.set(0, 0, 0);
-        animatedModel.rotation.set(0, 0, 0);
-        animatedModel.updateMatrixWorld(true);
-
-        animMixer = new THREE.AnimationMixer(animatedModel);
-        window.animMixer = animMixer;
-
-        scene.add(animatedModel);
-
-        // Default to Action Mode upon load!
-        setAppMode('action');
-      });
-    }
-
-    function setupMark85Engine(gltf) {
-      if (currentModel) scene.remove(currentModel);
-
-      currentModel = gltf.scene;
-      armorParts = [];
-      window.armorParts = armorParts;
-      window.currentModel = currentModel;
-
-      // 1. Normalize scale to canonical 1.85m height
-      const rawBox = new THREE.Box3().setFromObject(currentModel);
-      const rawSize = new THREE.Vector3();
-      rawBox.getSize(rawSize);
-      const targetHeight = 1.85;
-      const scaleFactor = targetHeight / (rawSize.y || 1);
-      currentModel.scale.setScalar(scaleFactor);
-      currentModel.updateMatrixWorld(true);
-
-      // 2. Center horizontally and ground feet
-      const scaledBox = new THREE.Box3().setFromObject(currentModel);
-      const scaledCenter = new THREE.Vector3();
-      scaledBox.getCenter(scaledCenter);
-      currentModel.position.x -= scaledCenter.x;
-      currentModel.position.z -= scaledCenter.z;
-      currentModel.position.y -= scaledBox.min.y;
-      currentModel.updateMatrixWorld(true);
-
-      // 3. Mark 85 faces front
-      currentModel.rotation.y = 0;
-      currentModel.updateMatrixWorld(true);
-
-      // 4. Enhance Materials (High-spec metallic finishes)
-      currentModel.traverse((child) => {
-        if (child.isMesh && child.material && child.visible) {
-          child.material = child.material.clone();
-          child.material.side = THREE.DoubleSide;
-          if (child.material.metalness !== undefined) {
-            child.material.metalness = Math.max(child.material.metalness, 0.86);
-            child.material.roughness = Math.min(child.material.roughness, 0.24);
-          }
-        }
-      });
-
-      scene.add(currentModel);
-
-      const box = new THREE.Box3().setFromObject(currentModel);
-      const center = box.getCenter(new THREE.Vector3());
-      const size = box.getSize(new THREE.Vector3());
-
-      fitCameraToObject(camera, currentModel, controls);
-
-      // 5. Build High-Fidelity Kinematic Separation Hierarchy
-      let meshIdx = 0;
-      currentModel.traverse((child) => {
-        if (child.isMesh && child.visible) {
-          child.castShadow = true;
-          child.receiveShadow = true;
-
-          const meshBox = new THREE.Box3().setFromObject(child);
-          const meshCenter = new THREE.Vector3();
-          meshBox.getCenter(meshCenter);
-
-          const origWorldPos = new THREE.Vector3();
-          child.getWorldPosition(origWorldPos);
-
-          const relY = (meshCenter.y - box.min.y) / size.y;
-          const relX = (meshCenter.x - center.x) / (size.x * 0.5 || 1);
-          const relZ = (meshCenter.z - center.z) / (size.z * 0.5 || 1);
-          const signX = (meshCenter.x - center.x) >= 0 ? 1 : -1;
-          const signZ = (meshCenter.z - center.z) >= 0 ? 1 : -1;
-
-          // Dedicated Cinematic Kinematic Classification for Mark 85
-          // Preserves spine chassis anchor at origin while symmetrically expanding outer shell
-          let subsystem = 'torso';
-          let isCore = false;
-          let unlatchVec = new THREE.Vector3();
-          let hingeAxisRot = new THREE.Vector3();
-          let railSlideVec = new THREE.Vector3();
-          let phaseStagger = 0.0;
-
-          if (meshIdx === 3 || meshIdx === 4 || meshIdx === 5 || meshIdx === 9) {
-            // Core chassis, spine column and pelvic foundation (ANCHOR BASE - remains pinned with micro-recoil)
-            isCore = true;
-            subsystem = 'core';
-            unlatchVec.set(0, -0.005, -0.015);
-            hingeAxisRot.set(0, 0, 0);
-            railSlideVec.set(0, -0.01, -0.02);
-            phaseStagger = 0.5;
-          } else if (meshIdx >= 22 && meshIdx <= 27) {
-            // Left Arm Gauntlet & Repulsor Armor Rings (Delicate mechanical ring fan around wrist)
-            subsystem = 'left_arm';
-            const ringOffset = (meshIdx - 22) * 0.015;
-            unlatchVec.set(-0.02 - ringOffset, 0.01, 0.02);
-            hingeAxisRot.set(0.05, 0.1, -0.15);
-            railSlideVec.set(-0.12 - ringOffset * 2.0, 0.02, 0.05);
-            phaseStagger = 0.20 + ringOffset;
-          } else if (meshIdx === 6) {
-            // Right Chest / Shoulder Plate (Exclusively Right Side)
-            subsystem = 'right_chest';
-            unlatchVec.set(0.06, 0.03, 0.08);
-            hingeAxisRot.set(-0.25, 0.65, -0.22);
-            railSlideVec.set(0.48, 0.15, 0.42);
-            phaseStagger = 0.10;
-          } else if (meshIdx === 17) {
-            // Left Shin / Calf Aerodynamic Flap (Exclusively Left Side)
-            subsystem = 'left_leg';
-            unlatchVec.set(-0.05, -0.02, 0.05);
-            hingeAxisRot.set(0.35, 0.25, 0.30);
-            railSlideVec.set(-0.42, -0.30, 0.25);
-            phaseStagger = 0.22;
-          } else if (meshIdx === 21) {
-            // Center Arc Reactor Optical Frame / Bezel
-            subsystem = 'reactor';
-            unlatchVec.set(0, 0.01, 0.08);
-            hingeAxisRot.set(0, 0, 0.1);
-            railSlideVec.set(0, 0.04, 0.55);
-            phaseStagger = 0.08;
-          } else if (relY > 0.76) {
-            // Head / Faceplate / Crown Cowl
-            subsystem = 'head';
-            unlatchVec.set(0, 0.04, 0.07);
-            hingeAxisRot.set(-0.65, 0, 0); // Visor flips up 37 degrees
-            railSlideVec.set(0, 0.38, 0.32);
-            phaseStagger = 0.05;
-          } else if (relY < 0.45) {
-            // Leg Lower / Boot Flaps (Symmetrical Z separation)
-            subsystem = 'legs';
-            const signZ = relZ >= 0 ? 1 : -1;
-            unlatchVec.set(0, -0.03, signZ * 0.05);
-            hingeAxisRot.set(signZ * 0.35, 0, 0);
-            railSlideVec.set(0, -0.38, signZ * 0.32);
-            phaseStagger = 0.26;
-          } else {
-            // Bilateral Upper Torso / Pectorals / Back Wings (Symmetrical Z separation)
-            subsystem = 'torso';
-            const signZ = relZ >= 0 ? 1 : -1;
-            unlatchVec.set(0, 0.03, signZ * 0.08);
-            hingeAxisRot.set(-0.25, 0, 0);
-            railSlideVec.set(0, 0.18, signZ * 0.46);
-            phaseStagger = 0.12;
-          }
-
-          // Transform vectors to object local coordinate space
-          const origLocalPos = child.position.clone();
-          const targetWorldPos = origWorldPos.clone().add(railSlideVec);
-          const targetLocalPos = child.parent ? child.parent.worldToLocal(targetWorldPos.clone()) : targetWorldPos;
-          const localRailVector = targetLocalPos.clone().sub(origLocalPos);
-
-          const unlatchWorldPos = origWorldPos.clone().add(unlatchVec);
-          const unlatchLocalPos = child.parent ? child.parent.worldToLocal(unlatchWorldPos.clone()) : unlatchWorldPos;
-          const localUnlatchVector = unlatchLocalPos.clone().sub(origLocalPos);
-
-          armorParts.push({
-            mesh: child,
-            idx: meshIdx,
-            subsystem: subsystem,
-            isCore: isCore,
-            origLocalPos: origLocalPos,
-            origWorldPos: origWorldPos,
-            boxCenterWorld: meshCenter.clone(),
-            origRot: child.rotation.clone(),
-            localUnlatchVector: localUnlatchVector,
-            localRailVector: localRailVector,
-            hingeAxisRot: hingeAxisRot,
-            phaseStagger: phaseStagger,
-            floatPhase: meshIdx * 0.38,
-            floatSpeed: 1.1 + (meshIdx % 3) * 0.25
-          });
-
-          meshIdx++;
-        }
-      });
-
-      // Initialize mechanical hydraulic links and laser tethers
-      initMechanicalLinkageVisuals(armorParts.length);
-
-      loaderElem.style.opacity = '0';
-      setTimeout(() => { loaderElem.style.display = 'none'; }, 500);
-
-      applyDeconstructFactor(0.0, 0);
-
-      // Check URL param for instant preview
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.has('t')) {
-        setTimeout(() => {
-          const val = parseFloat(urlParams.get('t'));
-          deconstructProgress = val;
-          applyDeconstructFactor(val, 0);
-          updateUI(val);
-        }, 120);
-      }
-    }
-
-    // Load Model with DRACOLoader
-    const loader = window.gltfLoader = new GLTFLoader();
-    const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath('draco/');
-    loader.setDRACOLoader(dracoLoader);
-
-    loader.load('models/mark85_v2.glb', (gltf) => {
-      setupMark85Engine(gltf);
-      loadAnimatedSkeletalModel();
-    }, undefined, (err) => {
-      console.error('Mark 85 load error:', err);
-      loaderElem.querySelector('.loader-text').textContent = '加载失败，请检查模型文件';
     });
+  }
+})();
+</script>
+<script id="mobile-perf-mode">
+/* =========================================================================
+   MOBILE QUALITY MODE (2026-09-14 v2) — 手机端画质自适应
+   前置改动：分片 0fxcu2cfwg1_i_v23.js 里 <Canvas dpr={[1,2]}> 已改成 dpr:[1,3]，
+             把渲染像素比上限从 2 倍放开到 3 倍（= 屏幕原生）。不改这一处，
+             无论怎么调 devicePixelRatio 都会被钳在 2 倍，画质上不去。
+   本脚本：默认就给「屏幕原生分辨率」（最清晰，和电脑一样 1:1），并实测帧率；
+           若明显掉帧，则降一档存进 localStorage，下次访问自动生效。
+   为什么用"记住上次结果"而不是实时调：
+       实测验证过 —— 渲染器的像素比只在初始化时读一次，
+       运行时改 devicePixelRatio 再 dispatch resize 也不会重新应用（canvas 纹丝不动）。
+       所以只能在加载时定档，靠跨次记忆来做适配。
+   为什么安全：window.devicePixelRatio 只是 JS 可读值，改写它不影响浏览器自身栅格化，
+              CSS 文字与 UI 仍按真实 DPR 渲染，保持清晰。
+   ========================================================================= */
+(function () {
+  try {
+    var KEY = 'stark_render_dpr';
+    var MAX = 3, MIN = 1.25;
 
-    // Smoothstep Kinematic Easing
-    function smoothStep(t) {
-      const clamped = Math.max(0, Math.min(1, t));
-      return clamped * clamped * (3 - 2 * clamped);
+    var isTouch = window.matchMedia('(pointer: coarse)').matches ||
+                  ('ontouchstart' in window) ||
+                  (navigator.maxTouchPoints || 0) > 0;
+    var isSmall = Math.min(screen.width, screen.height) <= 520;   // 含横竖屏
+    if (!isTouch && !isSmall) return;        // 桌面端完全不干预，保持 1:1 原生
+
+    var native = Math.min(window.devicePixelRatio || 1, MAX);
+    var saved = parseFloat(localStorage.getItem(KEY) || '');
+    var chosen = (!isNaN(saved) && saved >= MIN && saved <= MAX) ? Math.min(saved, native) : native;
+
+    Object.defineProperty(window, 'devicePixelRatio', {
+      get: function () { return chosen; },
+      configurable: true,
+    });
+    console.log('[Stark Quality] 本次渲染像素比 = ' + chosen + '（屏幕原生 ' + native + '）');
+
+    // ---- 实测帧率，决定下次访问的档位 ----
+    var frames = 0, t0 = 0, judged = false;
+    function tick(now) {
+      if (judged) return;
+      if (!t0) t0 = now;
+      frames++;
+      var el = now - t0;
+      if (el < 6000) { requestAnimationFrame(tick); return; }
+      judged = true;
+
+      var fps = frames / (el / 1000);
+      var next = chosen;
+      if (fps < 38) next = Math.max(MIN, chosen - 0.5);
+      else if (fps > 55) next = Math.min(native, chosen + 0.5);
+
+      var changed = Math.abs(next - chosen) > 0.01;
+      console.log('[Stark Quality] 实测 ' + fps.toFixed(0) + ' FPS @ dpr ' + chosen +
+                  (changed ? ' → 下次访问自动调整为 ' + next : ' → 保持'));
+      if (changed) { try { localStorage.setItem(KEY, String(next)); } catch (e) {} }
+    }
+    // 等 3D 起来再开始采样，避免把加载期的低帧误判成性能不足
+    setTimeout(function () { requestAnimationFrame(tick); }, 6000);
+  } catch (e) { /* 出任何问题都静默跳过，绝不影响正常加载 */ }
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Ma+Shan+Zheng&display=swap" rel="stylesheet"><link rel="stylesheet" href="/_next/static/chunks/21yvd6xkslq89.css" data-precedence="next"/><link rel="preload" as="script" fetchPriority="low" href="/_next/static/chunks/3s6nzrbk-8mnv.js"/><script src="/security.js"></script><script src="/prologue.js?v=29"></script><script src="/_next/static/chunks/1l6-dc4vmwioh.js" async=""></script><script src="/_next/static/chunks/12-t_xzgw49up.js" async=""></script><script src="/_next/static/chunks/34wvn5zw0a69w.js" async=""></script><script src="/_next/static/chunks/3450qyhportkm.js" async=""></script><script src="/_next/static/chunks/turbopack-0ed5g3cbb6d_w.js" async=""></script><script src="/_next/static/chunks/3u23uxnoj0-bt.js" async="" crossorigin=""></script><script src="/_next/static/chunks/2u_5kfn7y9nkt.js" async="" crossorigin=""></script><script src="/_next/static/chunks/1_hll8jc5fm-9.js" async="" crossorigin=""></script><script src="/_next/static/chunks/0guume1fosp9r.js" async="" crossorigin=""></script><script src="/_next/static/chunks/0fxcu2cfwg1_i_v23.js" async="" crossorigin=""></script><script src="/_next/static/chunks/0wil1yv-yjkon.js" async="" crossorigin=""></script><title>钢铁侠 3D 独立展台 // MARK I (STARK INDUSTRIES)</title><meta name="description" content="An original cinematic powered-armour laboratory experience with holographic 3D models and arc reactor diagnostics."/><link rel="icon" href="/icon.png?icon.3bqhrdrro5ebp.png" sizes="1122x1402" type="image/png"/><script src="/_next/static/chunks/0cz1d0mv5g_q7.js" noModule=""></script><style>
+  /* 彻底屏蔽 Next.js 错误边界白屏遮罩，确保 3D 展台和前奏不受网络波动影响 */
+  #__next_error__, [data-nextjs-dialog-overlay] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+  /* 3D 独立展台：隐藏原多页面站点的顶栏导航与页脚，确保纯净全屏展示 */
+  .stark-edge-header, .site-footer {
+    display: none !important;
+  }
+  html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden !important;
+    background: #080c14;
+    width: 100vw;
+    height: 100vh;
+  }
+  .stark-loading-stage {
+    min-height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #080c14;
+    color: #38bdf8;
+    font-family: "JetBrains Mono", monospace;
+    gap: 1.2rem;
+  }
+  .stark-spinner {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 3px solid rgba(0, 229, 255, 0.2);
+    border-top-color: #00e5ff;
+    animation: stark-spin 0.8s linear infinite;
+    box-shadow: 0 0 24px rgba(0, 229, 255, 0.45);
+  }
+  @keyframes stark-spin {
+    to { transform: rotate(360deg); }
+  }
+  /* 当全息故事档案库展开时，弱化手势面板防止与右上角反应堆重合 */
+  .gesture-control {
+    z-index: 10005 !important;
+  }
+  .apple-viewer-root.has-story-reader .gesture-control {
+    opacity: 0.96 !important;
+    pointer-events: auto !important;
+    z-index: 10005 !important;
+    transition: opacity 0.3s ease;
+  }
+  /* 摄像头画面亮度与通透感增强（达到视频同款明亮清透质感，去除暗光死黑） */
+  .gesture-control__preview {
+    filter: brightness(1.36) contrast(1.12) saturate(1.1) !important;
+    transform: scaleX(-1) !important;
+  }
+  /* 故事板底部导航栏与按钮视觉品质优化 */
+  .story-backplate-pager {
+    background: rgba(6, 12, 22, 0.94) !important;
+    border: 1px solid rgba(0, 229, 255, 0.45) !important;
+    border-radius: 12px !important;
+    padding: 0.42rem 0.85rem !important;
+    gap: 0.65rem !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.85), 0 0 24px rgba(0, 229, 255, 0.2), inset 0 0 16px rgba(0, 229, 255, 0.08) !important;
+    backdrop-filter: blur(28px) saturate(1.3) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(1.3) !important;
+  }
+
+  /* 上一章 / 下一章按钮 */
+  .story-backplate-pager .story-pager-btn {
+    font-family: "Orbitron", "Rajdhani", "JetBrains Mono", sans-serif !important;
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.14em !important;
+    color: #cbd5e1 !important;
+    background: rgba(15, 23, 42, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    border-radius: 8px !important;
+    padding: 0.46rem 1.1rem !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+
+  .story-backplate-pager .story-pager-btn:hover:not(:disabled) {
+    color: #00e5ff !important;
+    background: rgba(0, 229, 255, 0.16) !important;
+    border-color: rgba(0, 229, 255, 0.75) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 0 14px rgba(0, 229, 255, 0.45) !important;
+  }
+
+  .story-backplate-pager .story-pager-btn:disabled {
+    opacity: 0.25 !important;
+    cursor: not-allowed !important;
+    border-color: rgba(255, 255, 255, 0.06) !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+  }
+
+  /* 章节选项卡分割线 */
+  .story-backplate-pager .story-pager-tabs {
+    border-left: 1px solid rgba(0, 229, 255, 0.3) !important;
+    border-right: 1px solid rgba(0, 229, 255, 0.3) !important;
+    padding: 0 0.55rem !important;
+    gap: 0.45rem !important;
+  }
+
+  /* 章节选项卡按钮 (01 ORIGIN / 02 BATTLE / 03 ENDGAME) */
+  .story-backplate-pager .story-pager-tab-btn {
+    font-family: "Orbitron", "Rajdhani", "JetBrains Mono", sans-serif !important;
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.14em !important;
+    color: #94a3b8 !important;
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    border-radius: 8px !important;
+    padding: 0.46rem 1.15rem !important;
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+
+  .story-backplate-pager .story-pager-tab-btn:hover {
+    color: #f8fafc !important;
+    background: rgba(0, 229, 255, 0.08) !important;
+    border-color: rgba(0, 229, 255, 0.28) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.25) !important;
+  }
+
+  .story-backplate-pager .story-pager-tab-btn.is-active {
+    color: #00e5ff !important;
+    background: linear-gradient(135deg, rgba(0, 229, 255, 0.28) 0%, rgba(0, 100, 200, 0.18) 100%) !important;
+    border: 1px solid #00e5ff !important;
+    border-radius: 8px !important;
+    font-weight: 800 !important;
+    box-shadow: 0 0 18px rgba(0, 229, 255, 0.65), inset 0 0 12px rgba(0, 229, 255, 0.28) !important;
+    text-shadow: 0 0 8px rgba(0, 229, 255, 0.85) !important;
+  }
+
+  /* 关闭按钮 (✕ CLOSE) */
+  .story-backplate-pager .story-pager-close-btn {
+    font-family: "Orbitron", "Rajdhani", "JetBrains Mono", sans-serif !important;
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.14em !important;
+    color: #fca5a5 !important;
+    background: rgba(239, 68, 68, 0.18) !important;
+    border: 1px solid rgba(239, 68, 68, 0.6) !important;
+    border-radius: 8px !important;
+    padding: 0.46rem 1.15rem !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+
+  .story-backplate-pager .story-pager-close-btn:hover {
+    color: #ffffff !important;
+    background: rgba(239, 68, 68, 0.42) !important;
+    border-color: #ef4444 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 0 18px rgba(239, 68, 68, 0.65) !important;
+    text-shadow: 0 0 6px rgba(255, 255, 255, 0.85) !important;
+  }
+
+  /* =========================================================================
+     MOBILE & TOUCH ADAPTATION (手机端完整专属适配)
+     ========================================================================= */
+  canvas {
+    touch-action: none !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+  }
+
+  @media (max-width: 768px) {
+    /* 1. 移动端顶栏精简与防遮挡 */
+    .stark-brand {
+      font-size: 0.9rem !important;
+    }
+    .stark-brand .brand-division {
+      display: none !important;
+    }
+    .stark-header-inner {
+      padding: 0.4rem 0.6rem !important;
+    }
+    .stark-header-cta {
+      display: none !important;
     }
 
-    // Multi-stage Kinematic Curve: Maps global factor [0, 1] into 3 distinct mechanical stages
-    // Stage 1 (0.00 -> 0.18): Pneumatic Unlatch & Micro-Unlock
-    // Stage 2 (0.18 -> 0.58): Hinge Rotation & Flap Opening
-    // Stage 3 (0.35 -> 1.00): Linear Rail Extension & Forcefield Stasis
-    function getKinematicStages(factor, stagger) {
-      const adjusted = Math.max(0, Math.min(1, (factor - stagger) / (1.0 - stagger * 0.65)));
-
-      // 1. Unlatch factor (fast explosive release)
-      const unlatchT = smoothStep(adjusted / 0.20);
-
-      // 2. Hinge rotation factor (opens from 0.15 to 0.65)
-      const hingeRaw = (adjusted - 0.15) / 0.50;
-      const hingeT = smoothStep(hingeRaw);
-
-      // 3. Rail slide factor (smooth linear travel from 0.25 to 1.0)
-      const railRaw = (adjusted - 0.25) / 0.75;
-      const railT = smoothStep(railRaw);
-
-      return { unlatchT, hingeT, railT, active: adjusted > 0.001 };
+    /* 2. 手势面板在手机端右上角紧凑浮动，默认折叠，不遮挡战甲与面部 */
+    .gesture-control {
+      top: 3.8rem !important;
+      right: 0.5rem !important;
+      max-width: 90vw !important;
+      transform-origin: top right !important;
+      z-index: 99 !important;
+    }
+    .gesture-control.is-collapsed {
+      width: auto !important;
+      padding: 0.35rem 0.6rem !important;
     }
 
-    // Temporary math objects to avoid garbage collection
-    const vCurrentWorld = new THREE.Vector3();
-    const vOffset = new THREE.Vector3();
-    const vPistonMid = new THREE.Vector3();
-
-    // --- Core Mechanical Kinematics Executor ---
-    function applyDeconstructFactor(factor, elapsedTime) {
-      let lineVertexIdx = 0;
-
-      for (let i = 0; i < armorParts.length; i++) {
-        const p = armorParts[i];
-        const stages = getKinematicStages(factor, p.phaseStagger);
-
-        // Combined position: Unlatch pop + Rail slide travel
-        vOffset.set(0, 0, 0)
-          .addScaledVector(p.localUnlatchVector, stages.unlatchT)
-          .addScaledVector(p.localRailVector, stages.railT);
-
-        // Zero-G micro-float (only active when fully open)
-        let floatY = 0, floatX = 0;
-        if (stages.railT > 0.15 && !p.isCore) {
-          const wave = Math.sin(elapsedTime * p.floatSpeed + p.floatPhase);
-          floatY = wave * 0.015 * stages.railT;
-          floatX = Math.cos(elapsedTime * p.floatSpeed * 0.8 + p.floatPhase) * 0.008 * stages.railT;
-        }
-
-        // 1. Apply Kinematic Position
-        p.mesh.position.set(
-          p.origLocalPos.x + vOffset.x + floatX,
-          p.origLocalPos.y + vOffset.y + floatY,
-          p.origLocalPos.z + vOffset.z
-        );
-
-        // 2. Apply Mechanical Hinge Rotation (True mechanical joint rotation!)
-        p.mesh.rotation.x = p.origRot.x + p.hingeAxisRot.x * stages.hingeT;
-        p.mesh.rotation.y = p.origRot.y + p.hingeAxisRot.y * stages.hingeT;
-        p.mesh.rotation.z = p.origRot.z + p.hingeAxisRot.z * stages.hingeT;
-
-        p.mesh.getWorldPosition(vCurrentWorld);
-        const worldDelta = vCurrentWorld.clone().sub(p.origWorldPos);
-        const anchorPos = p.boxCenterWorld;
-        const currentPos = anchorPos.clone().add(worldDelta);
-        const dist = worldDelta.length();
-
-        // 3. Update Metallic Hydraulic Piston Struts (True World Transform)
-        if (strutMeshes[i]) {
-          const strut = strutMeshes[i];
-          if (showStruts && dist > 0.035 && !p.isCore) {
-            strut.visible = true;
-            strut.position.copy(anchorPos);
-            strut.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), worldDelta.clone().normalize());
-            strut.scale.set(1, dist, 1);
-          } else {
-            strut.visible = false;
-          }
-        }
-
-        // 4. Update Nanotech Laser Tethers (True World Transform)
-        if (tetherPositions) {
-          tetherPositions[lineVertexIdx++] = anchorPos.x;
-          tetherPositions[lineVertexIdx++] = anchorPos.y;
-          tetherPositions[lineVertexIdx++] = anchorPos.z;
-
-          tetherPositions[lineVertexIdx++] = currentPos.x;
-          tetherPositions[lineVertexIdx++] = currentPos.y;
-          tetherPositions[lineVertexIdx++] = currentPos.z;
-        }
-      }
-
-      // Update Tethers
-      if (tetherLines) {
-        tetherLines.geometry.attributes.position.needsUpdate = true;
-        const laserPulse = (Math.sin(elapsedTime * 6.0) + 1.0) * 0.2 + 0.6;
-        tetherLines.material.opacity = showTethers ? Math.min(0.7, factor * 1.3) * laserPulse : 0;
-      }
-
-      // Pulsing Reactor Light
-      const reactorPulse = Math.sin(elapsedTime * 4.0) * 0.3 + 1.0;
-      reactorLight.intensity = (4.0 + factor * 4.0) * reactorPulse;
+    /* 3. 底部 Dock 栏在手机屏幕上自适应排布，防止文字折行溢出 */
+    .apple-dock {
+      bottom: 0.6rem !important;
+      padding: 0.3rem 0.45rem !important;
+      max-width: calc(100vw - 1rem) !important;
+      gap: 0.25rem !important;
+    }
+    .apple-dock .dock-btn {
+      padding: 0.35rem 0.5rem !important;
+      font-size: 0.72rem !important;
+      min-width: 48px !important;
+    }
+    .apple-dock .dock-num {
+      display: none !important;
+    }
+    .apple-dock .dock-subtext {
+      display: none !important;
     }
 
-    // --- Update UI Sequence & Text Indicators ---
-    function updateUI(factor) {
-      dockSlider.value = Math.round(factor * 1000);
-      dockStatusNum.textContent = Math.round(factor * 100) + '%';
-
-      // Sequence Tracker highlight
-      stepElems.forEach(el => el.classList.remove('active'));
-      if (factor < 0.20) {
-        stepElems[0].classList.add('active');
-        stageText.textContent = '① 气动机械锁扣弹出 // 压力泄放';
-      } else if (factor < 0.58) {
-        stepElems[1].classList.add('active');
-        stageText.textContent = '② 关节机械铰链外翻 // 核心外露';
-      } else if (factor < 0.88) {
-        stepElems[2].classList.add('active');
-        stageText.textContent = '③ 装甲滑轨线性扩展 // 机械解构';
-      } else {
-        stepElems[3].classList.add('active');
-        stageText.textContent = '④ 全机甲悬浮检阅 // 力场定格状态';
-      }
-
-      
-      // Realtime Stark Industries Telemetry
-      const elSys = document.getElementById('hud-sys-status');
-      const elPress = document.getElementById('hud-pressure');
-      const elTorq = document.getElementById('hud-torque');
-      const elLocks = document.getElementById('hud-locks');
-      const elReact = document.getElementById('hud-reactor');
-      const elDisp = document.getElementById('hud-displacement');
-      const elElev = document.getElementById('hud-elevation');
-      const elStrut = document.getElementById('hud-strut-ext');
-      const elVolt = document.getElementById('hud-tether-volt');
-
-      if (elDisp) {
-        elDisp.textContent = (factor * 520).toFixed(1) + ' mm';
-        elElev.textContent = (factor * 38.5).toFixed(1) + '°';
-        elStrut.textContent = (factor * 34.2).toFixed(1) + ' cm';
-        elVolt.textContent = factor > 0.05 ? Math.round(12 + factor * 115) + ' kV' : '0 kV';
-        
-        if (factor <= 0.02) {
-          elSys.textContent = 'STANDBY';
-          elSys.classList.remove('active');
-          elLocks.textContent = 'LOCKED';
-          elLocks.classList.add('active');
-          elPress.textContent = '14.7 PSI';
-          elTorq.textContent = '0 Nm';
-          elReact.textContent = '1.2 GJ/s';
-        } else if (factor < 0.20) {
-          elSys.textContent = 'DECOMPRESSING';
-          elSys.classList.add('active');
-          elLocks.textContent = 'RELEASED';
-          elLocks.classList.remove('active');
-          elPress.textContent = ((1.0 - factor / 0.20) * 88.5 + 14.7).toFixed(1) + ' PSI';
-          elTorq.textContent = '2,400 Nm';
-          elReact.textContent = (2.5 + factor * 10).toFixed(1) + ' GJ/s';
-        } else if (factor < 0.88) {
-          elSys.textContent = 'ACTUATING';
-          elSys.classList.add('active');
-          elLocks.textContent = 'UNCOUPLED';
-          elLocks.classList.remove('active');
-          elPress.textContent = '4.2 PSI';
-          elTorq.textContent = (3500 + Math.sin(factor * 12) * 800).toFixed(0) + ' Nm';
-          elReact.textContent = (6.0 + factor * 4.5).toFixed(1) + ' GJ/s';
-        } else {
-          elSys.textContent = 'STASIS LEVITATION';
-          elSys.classList.add('active');
-          elLocks.textContent = 'HOVER FIELD';
-          elLocks.classList.add('active');
-          elPress.textContent = '0.0 PSI';
-          elTorq.textContent = '650 Nm';
-          elReact.textContent = '12.8 GJ/s';
-        }
-      }
-
-      if (factor <= 0.02) {
-        stageText.textContent = '战甲完全闭合 // 待命状态';
-        playText.textContent = '启动机械解构';
-        playIcon.textContent = '▶';
-        btnTogglePlay.classList.remove('active');
-      } else if (factor >= 0.98) {
-        playText.textContent = '机械咬合复位';
-        playIcon.textContent = '🔄';
-      } else {
-        playText.textContent = '暂停';
-        playIcon.textContent = '⏸';
-        btnTogglePlay.classList.add('active');
-      }
+    /* 4. 左下角战甲状态面板紧凑化 */
+    .armor-status-card {
+      transform: scale(0.85) !important;
+      transform-origin: bottom left !important;
+      bottom: 4.8rem !important;
+      left: 0.5rem !important;
     }
 
-    // --- Interactive Play Controller ---
-    function togglePlay() {
-      AudioEngine.init();
-      if (isPlaying) {
-        isPlaying = false;
-        btnTogglePlay.classList.remove('active');
-        playIcon.textContent = '▶';
-        playText.textContent = playDirection > 0 ? '继续解构' : '继续复原';
-      } else {
-        isPlaying = true;
-        btnTogglePlay.classList.add('active');
-        playIcon.textContent = '⏸';
-        playText.textContent = '暂停';
-
-        if (deconstructProgress >= 0.99) {
-          playDirection = -1; // Reverse to reassemble
-          AudioEngine.playServoActuator(1.2);
-          setTimeout(() => AudioEngine.playHydraulicSlide(), 250);
-        } else if (deconstructProgress <= 0.01) {
-          playDirection = 1; // Start unlatching
-          AudioEngine.playPneumaticVent();
-          setTimeout(() => AudioEngine.playServoActuator(1.0), 380);
-          setTimeout(() => AudioEngine.playArcReactorPower(), 200);
-        }
-      }
+    /* 5. 前奏毛笔书法与英文名台词在手机屏幕的优雅缩放 */
+    .quote-zh-hero {
+      font-size: clamp(20px, 6.2vw, 34px) !important;
+      letter-spacing: 0.12em !important;
+      line-height: 1.25 !important;
+    }
+    .quote-en-floating {
+      font-size: clamp(14px, 4.5vw, 22px) !important;
+      margin-bottom: 0.2rem !important;
+    }
+    .zh-stroke {
+      width: 78vw !important;
+      margin-top: 0.5rem !important;
     }
 
-    btnTogglePlay.addEventListener('click', togglePlay);
-
-    // Spacebar hotkey
-    window.addEventListener('keydown', (e) => {
-      if (e.code === 'Space') {
-        e.preventDefault();
-        togglePlay();
-      }
-    });
-
-    // Slider scrubbing with Mark V Ratchet Clicks
-    let lastSliderVal = 0;
-    dockSlider.addEventListener('input', (e) => {
-      AudioEngine.init();
-      isPlaying = false;
-      btnTogglePlay.classList.remove('active');
-      const val = parseFloat(e.target.value);
-      deconstructProgress = val / 1000;
-      
-      // Trigger subtle mechanical ratchet ticks when scrubbing
-      if (Math.abs(val - lastSliderVal) > 18) {
-        AudioEngine.playRatchetCascade(2, 12);
-        lastSliderVal = val;
-      }
-      
-      applyDeconstructFactor(deconstructProgress, clock.getElapsedTime());
-      updateUI(deconstructProgress);
-    });
-
-    // Toggle Hydraulic Struts
-    btnStrut.addEventListener('click', () => {
-      showStruts = !showStruts;
-      btnStrut.classList.toggle('active', showStruts);
-      strutPistonGroup.visible = showStruts;
-    });
-
-    // Toggle Nanotech Tether Laser Lines
-    btnTether.addEventListener('click', () => {
-      showTethers = !showTethers;
-      btnTether.classList.toggle('active', showTethers);
-      if (tetherLines) tetherLines.visible = showTethers;
-    });
-
-    // Toggle Loop
-    btnLoop.addEventListener('click', () => {
-      isLooping = !isLooping;
-      btnLoop.classList.toggle('active', isLooping);
-    });
-
-    // Toggle Speed
-    const speeds = [1.0, 0.5, 2.0];
-    let speedIdx = 0;
-    btnSpeed.addEventListener('click', () => {
-      speedIdx = (speedIdx + 1) % speeds.length;
-      playSpeed = speeds[speedIdx];
-      btnSpeed.textContent = playSpeed.toFixed(1) + 'x';
-    });
-
-    // Reset Button
-    btnReset.addEventListener('click', () => {
-      isPlaying = false;
-      playDirection = 1;
-      deconstructProgress = 0.0;
-      applyDeconstructFactor(0.0, 0);
-      updateUI(0.0);
-      AudioEngine.playArmorLockingClang();
-    });
-
-    // Auto-dim Dock on Mouse Inactivity
-    let idleTimer = null;
-    window.addEventListener('pointermove', () => {
-      minimalDock.classList.remove('dimmed');
-      clearTimeout(idleTimer);
-      idleTimer = setTimeout(() => {
-        if (!minimalDock.matches(':hover')) {
-          minimalDock.classList.add('dimmed');
-        }
-      }, 3500);
-    });
-
-    // --- Main Animation Loop ---
-    let clock = new THREE.Clock();
-
-    function animate() {
-      requestAnimationFrame(animate);
-      const delta = clock.getDelta();
-      const elapsed = clock.getElapsedTime();
-
-      controls.update();
-      if (animMixer && currentAppMode === 'action') animMixer.update(delta);
-
-      if (isPlaying) {
-        const step = (delta / 4.2) * playSpeed * playDirection;
-        const prevP = deconstructProgress;
-        deconstructProgress += step;
-
-        // Cinema Sound Stage Triggers across 4 Mechanical Milestones (Iron Man 2 Mark V Suitcase Profile)
-        if (playDirection > 0) {
-          // Deconstruction Sequence:
-          // Micro ratchet cascade in early unlatch
-          if (prevP < 0.08 && deconstructProgress >= 0.08) {
-            AudioEngine.playRatchetCascade(5, 20);
-          }
-          // Stage 2 (0.18): Servo motors rotate flaps outward with high whine
-          if (prevP < 0.18 && deconstructProgress >= 0.18) {
-            AudioEngine.playServoActuator(1.2);
-            AudioEngine.playRatchetCascade(7, 24);
-          }
-          // Stage 3 (0.50): Hydraulic pistons slide out on linear guide rails + dense ratchet teeth
-          if (prevP < 0.50 && deconstructProgress >= 0.50) {
-            AudioEngine.playHydraulicSlide();
-            setTimeout(() => AudioEngine.playServoActuator(0.88), 180);
-            setTimeout(() => AudioEngine.playRatchetCascade(6, 25), 320);
-          }
-          // Stage 4 (0.85): Forcefield stasis humming lock
-          if (prevP < 0.85 && deconstructProgress >= 0.85) {
-            AudioEngine.playArcReactorPower();
-            AudioEngine.playRatchetCascade(4, 30);
-          }
-        } else {
-          // Reassembly Sequence (Reverse):
-          // Stage 3 -> 2 (0.55): Hydraulic glide retraction + closing teeth clicks
-          if (prevP > 0.55 && deconstructProgress <= 0.55) {
-            AudioEngine.playHydraulicSlide();
-            setTimeout(() => AudioEngine.playServoActuator(1.05), 180);
-            AudioEngine.playRatchetCascade(8, 22);
-          }
-          // Stage 2 -> 1 (0.22): Servo flaps folding back with fast ratchets
-          if (prevP > 0.22 && deconstructProgress <= 0.22) {
-            AudioEngine.playServoActuator(1.25);
-            AudioEngine.playRatchetCascade(10, 18);
-          }
-          // Stage 1 (0.05): Air compression hiss before final lock
-          if (prevP > 0.06 && deconstructProgress <= 0.06) {
-            AudioEngine.playPneumaticVent();
-          }
-        }
-
-        if (deconstructProgress >= 1.0) {
-          deconstructProgress = 1.0;
-          if (isLooping) {
-            playDirection = -1;
-            AudioEngine.playServoActuator(1.2);
-            setTimeout(() => AudioEngine.playHydraulicSlide(), 200);
-          } else {
-            isPlaying = false;
-          }
-        } else if (deconstructProgress <= 0.0) {
-          deconstructProgress = 0.0;
-          AudioEngine.playArmorLockingClang();
-          if (isLooping) {
-            playDirection = 1;
-            setTimeout(() => {
-              AudioEngine.playPneumaticVent();
-              setTimeout(() => AudioEngine.playServoActuator(1.0), 380);
-            }, 600);
-          } else {
-            isPlaying = false;
-          }
-        }
-
-        updateUI(deconstructProgress);
-      }
-
-      applyDeconstructFactor(deconstructProgress, elapsed);
-
-      particles.rotation.y += 0.0008;
-      if (typeof holoRing1 !== 'undefined') {
-        holoRing1.rotation.z += 0.004;
-        holoRing2.rotation.z -= 0.002;
-        holoGrid.rotation.y += 0.001;
-      }
-
-      renderer.render(scene, camera);
+    /* 6. 故事板在手机端自适应全屏并优化翻页与关闭按钮 */
+    .story-backplate-pager {
+      bottom: 4.2rem !important;
+      width: calc(100vw - 1rem) !important;
+      padding: 0.35rem !important;
+      gap: 0.2rem !important;
+      flex-wrap: wrap !important;
+      justify-content: center !important;
     }
+    .story-backplate-pager .story-pager-btn {
+      padding: 0.3rem 0.5rem !important;
+      font-size: 0.7rem !important;
+    }
+    .story-backplate-pager .story-pager-close-btn {
+      padding: 0.3rem 0.65rem !important;
+      font-size: 0.7rem !important;
+    }
+  }
+</style>
+<style id="mobile-polish-v1">
+/* =========================================================================
+   MOBILE POLISH v1 (2026-09-14) — 手机端精修
+   纯 CSS 覆盖，全部包在 max-width:768px 内，桌面端零影响。
+   解决的问题（依据 iPhone13/安卓/iPad 三档实测 DOM 坐标）：
+     1. span.brand-eyebrow 折成两行(h=30)，把 MARK I 标题往下顶
+     2. aside.gesture-control 停在 y=61，正好压在 MARK I 标题(y=41~99)上
+     3. footer.apple-dock 距底仅 10px，会被 iPhone Home 指示条盖住
+     4. iPhone 刘海/状态栏会遮住顶部 back-link（缺 safe-area-inset-top）
+     5. 移动浏览器地址栏吃掉 100vh 底部
+   ========================================================================= */
+@media (max-width: 768px) {
+  /* —— 1. 顶部让开刘海/状态栏 —— */
+  .apple-header {
+    padding-top: calc(env(safe-area-inset-top, 0px) + 0.4rem) !important;
+  }
 
-    animate();
+  /* —— 2. 顶部文字：必须用两段式选择器 .apple-viewer-root xxx，
+        否则压不过框架里的 .apple-header .brand-eyebrow（优先级更高，字号改不动） —— */
+  .apple-viewer-root .brand-eyebrow {
+    font-size: 0.5rem !important;
+    letter-spacing: 0.06em !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: block !important;
+    max-width: 52vw !important;
+  }
+  .apple-viewer-root .brand-model {
+    font-size: 1.5rem !important;
+    line-height: 1.05 !important;
+  }
+  .apple-viewer-root .back-link {
+    font-size: 0.6rem !important;
+    letter-spacing: 0.05em !important;
+  }
+  .apple-viewer-root .header-actions { gap: 0.28rem !important; }
+  .apple-viewer-root .apple-ghost-btn {
+    padding: 0.26rem 0.46rem !important;
+    font-size: 0.54rem !important;
+    letter-spacing: 0.03em !important;
+  }
 
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-  </script>
-</body>
-</html>
+  /* —— 3. 手势面板移到 Dock 上方：彻底避开标题区，且不受顶部高度影响 —— */
+  .gesture-control {
+    top: auto !important;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 5.4rem) !important;
+    right: 0.5rem !important;
+    left: auto !important;
+    transform-origin: bottom right !important;
+  }
+
+  /* —— 4. Dock 让开 iPhone Home 指示条 —— */
+  .apple-dock {
+    bottom: calc(0.55rem + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  /* —— 5. 触屏手感：去点击蓝框、保证可点面积 >= 44px —— */
+  * {
+    -webkit-tap-highlight-color: transparent !important;
+  }
+  .dock-btn {
+    min-height: 44px !important;
+    -webkit-touch-callout: none !important;
+  }
+  .apple-ghost-btn,
+  .gesture-control__toggle,
+  .gesture-control__collapse-btn,
+  .gesture-control__guide-btn {
+    min-height: 34px !important;
+  }
+  .story-board-entry { min-height: 32px !important; }
+}
+
+/* —— 6. 移动浏览器动态地址栏：100dvh 兜住被吃掉的底部 —— */
+@supports (height: 100dvh) {
+  @media (max-width: 768px) {
+    html, body { height: 100dvh !important; }
+  }
+}
+</style>
+<style id="mobile-landscape-v2">
+/* =========================================================================
+   MOBILE LANDSCAPE v2 (2026-09-14) — 手机横屏单独适配
+   为什么要单开一套：
+     横屏手机宽度 844~915px，全部 > 768px，所以既有的 max-width:768px
+     规则一条都不命中 → 直接套用桌面布局，在仅 390~412px 的竖向空间里
+     出现巨大标题、巨大留白、元素互相挤压。
+   判定条件：orientation:landscape + max-height:480px
+     （手机横屏高 390~430px；桌面窗口极少矮于 480px，误判风险低）
+   竖向空间是横屏最稀缺的资源，本套规则一切以「压缩高度」为第一优先。
+   ========================================================================= */
+@media (orientation: landscape) and (max-height: 480px) {
+
+  /* —— 1. 顶栏压成单行，并让开侧边刘海 —— */
+  .apple-viewer-root .apple-header {
+    padding: calc(env(safe-area-inset-top, 0px) + 0.2rem)
+             calc(env(safe-area-inset-right, 0px) + 0.55rem)
+             0.2rem
+             calc(env(safe-area-inset-left, 0px) + 0.55rem) !important;
+    background: linear-gradient(#050709d9 0%, #05070926 72%, transparent 100%) !important;
+  }
+  /* 品牌区从「竖排」改为「横排」，一行放下 返回链接 + 标题 */
+  .apple-viewer-root .header-brand {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: baseline !important;
+    gap: 0.6rem !important;
+    max-width: 56vw !important;
+  }
+  .apple-viewer-root .header-titles {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: baseline !important;
+    gap: 0.5rem !important;
+  }
+  /* 装饰性英文小字在横屏直接隐掉（竖向最省，且横屏本就不需要它有存在感） */
+  .apple-viewer-root .brand-eyebrow { display: none !important; }
+  /* 单行标题必须禁止内部折行，否则横屏会被挤成两行把 MARK I 截断 */
+  .apple-viewer-root .brand-model {
+    font-size: 1.02rem !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+  .apple-viewer-root .back-link {
+    font-size: 0.55rem !important;
+    letter-spacing: 0.04em !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+  .apple-viewer-root .header-actions { gap: 0.25rem !important; }
+  .apple-viewer-root .header-actions .apple-ghost-btn {
+    padding: 0.2rem 0.42rem !important;
+    font-size: 0.5rem !important;
+    letter-spacing: 0.02em !important;
+    min-height: 26px !important;
+  }
+
+  /* —— 2. 底部 Dock 压扁：横屏高度只有 390px，Dock 不能吃掉 1/6 —— */
+  .apple-viewer-root .apple-dock {
+    bottom: calc(0.28rem + env(safe-area-inset-bottom, 0px)) !important;
+    padding: 0.16rem 0.4rem !important;
+    max-width: calc(100vw - 2rem) !important;
+    gap: 0.15rem !important;
+  }
+  .apple-viewer-root .dock-btn {
+    min-height: 34px !important;
+    padding: 0.18rem 0.42rem !important;
+  }
+  .apple-viewer-root .dock-label { font-size: 0.56rem !important; }
+  .apple-viewer-root .dock-index { font-size: 0.48rem !important; }
+
+  /* —— 3. 手势面板：贴右侧、Dock 上方，不挡战甲主体 —— */
+  .apple-viewer-root .gesture-control {
+    top: auto !important;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 3.6rem) !important;
+    right: calc(env(safe-area-inset-right, 0px) + 0.5rem) !important;
+    left: auto !important;
+    transform-origin: bottom right !important;
+  }
+
+  /* —— 4. 前奏书法与英文台词在横屏缩小，避免占满整屏 —— */
+  .apple-viewer-root .quote-zh-hero { font-size: clamp(15px, 3.4vw, 26px) !important; letter-spacing: 0.2em !important; }
+  .apple-viewer-root .quote-en-floating { font-size: clamp(10px, 2.2vw, 15px) !important; }
+  .apple-viewer-root .zh-stroke { width: 42vw !important; }
+
+  /* —— 5. 故事板底部导航压扁，且不再撑满宽度 —— */
+  .apple-viewer-root .story-backplate-pager {
+    bottom: calc(2.7rem + env(safe-area-inset-bottom, 0px)) !important;
+    width: auto !important;
+    max-width: calc(100vw - 2rem) !important;
+    padding: 0.22rem 0.5rem !important;
+    gap: 0.3rem !important;
+  }
+  .apple-viewer-root .story-backplate-pager .story-pager-btn,
+  .apple-viewer-root .story-backplate-pager .story-pager-tab-btn,
+  .apple-viewer-root .story-backplate-pager .story-pager-close-btn {
+    padding: 0.22rem 0.5rem !important;
+    font-size: 0.62rem !important;
+    min-height: 28px !important;
+  }
+
+  /* —— 6. 触屏手感（横屏同样适用） —— */
+  * { -webkit-tap-highlight-color: transparent !important; }
+  .apple-viewer-root .dock-btn { -webkit-touch-callout: none !important; }
+}
+
+/* 横屏同样需要 dvh 兜底（既有规则只覆盖 max-width:768px） */
+@supports (height: 100dvh) {
+  @media (orientation: landscape) and (max-height: 480px) {
+    html, body { height: 100dvh !important; }
+  }
+}
+</style>
+</head><body><div hidden=""><!--$--><!--/$--></div><div class="loading-scan " data-motion="full" aria-hidden="true"></div><header class="stark-edge-header "><div class="stark-header-inner"><a class="stark-brand" href="/"><span class="brand-primary">STARK</span><span class="brand-division">INDUSTRIES</span></a><nav class="stark-nav-links" aria-label="Main Navigation"><a class="nav-link-item " href="/armors/"><span class="en-label">ARMORS</span><span class="zh-label">战甲库</span></a><a class="nav-link-item " href="/viewer/"><span class="en-label">3D LAB</span><span class="zh-label">3D 实验室</span></a><a class="nav-link-item " href="/#archive"><span class="en-label">ARCHIVE</span><span class="zh-label">战甲档案</span></a><a class="nav-link-item " href="/#gallery"><span class="en-label">GALLERY</span><span class="zh-label">影像画廊</span></a><a class="nav-link-item " href="/lab/"><span class="en-label">LAB</span><span class="zh-label">系统实验室</span></a><a class="nav-link-item " href="/story/"><span class="en-label">TIMELINE</span><span class="zh-label">战役纪元</span></a><a class="nav-link-item " href="/customize/"><span class="en-label">CUSTOMIZE</span><span class="zh-label">战甲定制</span></a></nav><div class="stark-header-actions"><button type="button" class="stark-sound-mini-btn " title="Toggle Stark Audio" aria-label="Toggle sound"><span>🔊</span></button><a class="stark-header-cta" href="/viewer/"><span>ENTER 3D</span><span class="cta-arrow">↗</span></a><button type="button" class="stark-mobile-menu-btn" aria-expanded="false" aria-label="打开导航">☰</button></div></div></header><main><!--$!--><template data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"></template><div class="stark-loading-stage"><div class="stark-spinner"></div><div style="font-size:1.05rem;letter-spacing:0.18em;font-weight:bold">INITIALIZING STARK 3D LAB (MARK I)...</div></div><!--/$--><!--$--><!--/$--></main><footer class="site-footer"><p class="site-footer__statement">力量从来不是答案。<br/>选择如何使用它，才是。</p><div class="site-footer__meta"><span>I.M. LAB / ORIGINAL FICTION</span><span>非官方主题体验 · 2026</span><a href="/">返回指挥甲板 ↑</a></div></footer><script src="/_next/static/chunks/3s6nzrbk-8mnv.js" id="_R_" async=""></script><script>(self.__next_f=self.__next_f||[]).push([0])</script><script>self.__next_f.push([1,"1:\"$Sreact.fragment\"\n2:I[87255,[\"/_next/static/chunks/3u23uxnoj0-bt.js\",\"/_next/static/chunks/2u_5kfn7y9nkt.js\"],\"LoadingScan\"]\n3:I[15093,[\"/_next/static/chunks/3u23uxnoj0-bt.js\",\"/_next/static/chunks/2u_5kfn7y9nkt.js\"],\"HudTracker\"]\n4:I[33463,[\"/_next/static/chunks/3u23uxnoj0-bt.js\",\"/_next/static/chunks/2u_5kfn7y9nkt.js\"],\"SiteNav\"]\n5:I[39756,[\"/_next/static/chunks/3u23uxnoj0-bt.js\",\"/_next/static/chunks/2u_5kfn7y9nkt.js\"],\"default\"]\n6:I[37457,[\"/_next/static/chunks/3u23uxnoj0-bt.js\",\"/_next/static/chunks/2u_5kfn7y9nkt.js\"],\"default\"]\n7:I[56399,[\"/_next/static/chunks/3u23uxnoj0-bt.js\",\"/_next/static/chunks/2u_5kfn7y9nkt.js\"],\"SiteFooter\"]\n8:I[47257,[\"/_next/static/chunks/3u23uxnoj0-bt.js\",\"/_next/static/chunks/2u_5kfn7y9nkt.js\"],\"ClientPageRoot\"]\n9:I[4355,[\"/_next/static/chunks/3u23uxnoj0-bt.js\",\"/_next/static/chunks/2u_5kfn7y9nkt.js\",\"/_next/static/chunks/1_hll8jc5fm-9.js\",\"/_next/static/chunks/0guume1fosp9r.js\",\"/_next/static/chunks/0fxcu2cfwg1_i_v23.js\",\"/_next/static/chunks/0wil1yv-yjkon.js\"],\"default\"]\nc:I[97367,[\"/_next/static/chunks/3u23uxnoj0-bt.js\",\"/_next/static/chunks/2u_5kfn7y9nkt.js\"],\"OutletBoundary\"]\nd:\"$Sreact.suspense\"\n10:I[97367,[\"/_next/static/chunks/3u23uxnoj0-bt.js\",\"/_next/static/chunks/2u_5kfn7y9nkt.js\"],\"ViewportBoundary\"]\n12:I[97367,[\"/_next/static/chunks/3u23uxnoj0-bt.js\",\"/_next/static/chunks/2u_5kfn7y9nkt.js\"],\"MetadataBoundary\"]\n14:I[68027,[\"/_next/static/chunks/3u23uxnoj0-bt.js\",\"/_next/static/chunks/2u_5kfn7y9nkt.js\"],\"default\",1]\n:HL[\"/_next/static/chunks/21yvd6xkslq89.css\",\"style\"]\nf:X\n0:{\"P\":null,\"c\":[\"\",\"viewer\",\"\"],\"q\":\"\",\"i\":false,\"f\":[[[\"\",{\"children\":[\"viewer\",{\"children\":[\"__PAGE__\",{},\"$undefined\",\"$undefined\",4608]},\"$undefined\",\"$undefined\",4608]},\"$undefined\",\"$undefined\",4624],[[\"$\",\"$1\",\"c\",{\"children\":[[[\"$\",\"link\",\"0\",{\"rel\":\"stylesheet\",\"href\":\"/_next/static/chunks/21yvd6xkslq89.css\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\",\"nonce\":\"$undefined\"}],[\"$\",\"script\",\"script-0\",{\"src\":\"/_next/static/chunks/3u23uxnoj0-bt.js\",\"async\":true,\"nonce\":\"$undefined\"}],[\"$\",\"script\",\"script-1\",{\"src\":\"/_next/static/chunks/2u_5kfn7y9nkt.js\",\"async\":true,\"nonce\":\"$undefined\"}]],[\"$\",\"html\",null,{\"lang\":\"zh-CN\",\"children\":[\"$\",\"body\",null,{\"children\":[[\"$\",\"$L2\",null,{}],[\"$\",\"$L3\",null,{}],[\"$\",\"$L4\",null,{}],[\"$\",\"main\",null,{\"children\":[\"$\",\"$L5\",null,{\"parallelRouterKey\":\"children\",\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$L6\",null,{}],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":\"$undefined\",\"forbidden\":\"$undefined\",\"unauthorized\":\"$undefined\"}]}],[\"$\",\"$L7\",null,{}]]}]}]]}],{\"children\":[[\"$\",\"$1\",\"c\",{\"children\":[null,[\"$\",\"$L5\",null,{\"parallelRouterKey\":\"children\",\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$L6\",null,{}],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":\"$undefined\",\"forbidden\":\"$undefined\",\"unauthorized\":\"$undefined\"}]]}],{\"children\":[[\"$\",\"$1\",\"c\",{\"children\":[[\"$\",\"$L8\",null,{\"Component\":\"$9\",\"serverProvidedParams\":{\"searchParams\":{},\"params\":{},\"promises\":[\"$@a\",\"$@b\"]}}],[[\"$\",\"script\",\"script-0\",{\"src\":\"/_next/static/chunks/1_hll8jc5fm-9.js\",\"async\":true,\"nonce\":\"$undefined\"}],[\"$\",\"script\",\"script-1\",{\"src\":\"/_next/static/chunks/0guume1fosp9r.js\",\"async\":true,\"nonce\":\"$undefined\"}],[\"$\",\"script\",\"script-2\",{\"src\":\"/_next/static/chunks/0fxcu2cfwg1_i_v23.js\",\"async\":true,\"nonce\":\"$undefined\"}],[\"$\",\"script\",\"script-3\",{\"src\":\"/_next/static/chunks/0wil1yv-yjkon.js\",\"async\":true,\"nonce\":\"$undefined\"}]],[\"$\",\"$Lc\",null,{\"children\":[\"$\",\"$d\",null,{\"name\":\"Next.MetadataOutlet\",\"children\":\"$@e\"}]}]]}],{},null,false,null]},null,false,\"$f\"]},null,false,null],[\"$\",\"$1\",\"h\",{\"children\":[null,[\"$\",\"$L10\",null,{\"children\":\"$L11\"}],[\"$\",\"div\",null,{\"hidden\":true,\"children\":[\"$\",\"$L12\",null,{\"children\":[\"$\",\"$d\",null,{\"name\":\"Next.Metadata\",\"children\":\"$L13\"}]}]}],null]}],false]],\"m\":\"$undefined\",\"G\":[\"$14\",[[\"$\",\"link\",\"0\",{\"rel\":\"stylesheet\",\"href\":\"/_next/static/chunks/21yvd6xkslq89.css\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\",\"nonce\":\"$undefined\"}]]],\"S\":true,\"h\":null,\"r\":\"$undefined\",\"s\":\"$undefined\",\"a\":\"$undefined\",\"l\":\"$undefined\",\"p\":\"$undefined\",\"d\":\"$undefined\",\"b\":\"ieBQ48ClHxdxPHL_eLXoF\"}\nf:C\na:{}\nb:\"$0:f:0:1:1:children:1:children:0:props:children:0:props:serverProvidedParams:params\"\n11:[[\"$\",\"meta\",\"0\",{\"charSet\":\"utf-8\"}],[\"$\",\"meta\",\"1\",{\"name\":\"viewport\",\"content\":\"width=device-width, initial-scale=1\"}]]\n15:I[27201,[\"/_next/static/chunks/3u23uxnoj0-bt.js\",\"/_next/static/chunks/2u_5kfn7y9nkt.js\"],\"IconMark\"]\ne:null\n13:[[\"$\",\"title\",\"0\",{\"children\":\"Iron Man Lab — Stark Future Technology Experience\"}],[\"$\",\"meta\",\"1\",{\"name\":\"description\",\"content\":\"An original cinematic powered-armour laboratory experience with holographic 3D models and arc reactor diagnostics.\"}],[\"$\",\"link\",\"2\",{\"rel\":\"icon\",\"href\":\"/icon.png?icon.3bqhrdrro5ebp.png\",\"sizes\":\"1122x1402\",\"type\":\"image/png\"}],[\"$\",\"$L15\",\"3\",{}]]\n"])</script><script>
+// 点击左上角格纳库链接时，在当前展台直接呼出底部 01 ARCHIVE 战甲选择抽屉
+document.addEventListener('click', function(e) {
+  var backLink = e.target.closest('.back-link');
+  if (backLink) {
+    e.preventDefault();
+    e.stopPropagation();
+    var dockArchiveBtn = document.querySelector('.apple-dock .dock-btn');
+    if (dockArchiveBtn) {
+      dockArchiveBtn.click();
+    }
+  }
+}, true);
+</script>
+<script id="mobile-landscape-collapse">
+/* =========================================================================
+   手机横屏：自动折叠手势面板
+   原因：框架只在「窄屏」自动折叠 gesture-control，而横屏手机宽 844~915px
+         (>768) 被判为宽屏 → 面板保持展开态（实测 368x185），
+         在只有 390~412px 高的屏幕里吃掉近一半面积，挡住战甲。
+   做法：仅在「横屏且视口高<=480px」时，程序化触发它自己的折叠按钮；
+         用户仍可随时手动点 EXPAND 展开，不做强制锁定。
+   ========================================================================= */
+(function () {
+  var MQ = '(orientation: landscape) and (max-height: 480px)';
+
+  function collapseGesturePanel() {
+    try {
+      if (!window.matchMedia(MQ).matches) return;
+      var panel = document.querySelector('.gesture-control');
+      if (!panel) return;
+      if (panel.classList.contains('is-collapsed')) return; // 已折叠，别点了（会反向展开）
+      var btn = panel.querySelector('.gesture-control__collapse-btn');
+      if (btn) btn.click();
+    } catch (e) {}
+  }
+
+  function schedule() { setTimeout(collapseGesturePanel, 350); }
+
+  window.addEventListener('orientationchange', schedule);
+  window.addEventListener('resize', schedule);
+  window.addEventListener('load', function () { setTimeout(collapseGesturePanel, 1000); });
+
+  // 面板由 React 异步挂载，前 15 秒轮询兜底（之后自动停止，不留常驻定时器）
+  var tries = 0;
+  var timer = setInterval(function () {
+    collapseGesturePanel();
+    if (++tries > 20) clearInterval(timer);
+  }, 750);
+})();
+</script>
+</body></html>
+
